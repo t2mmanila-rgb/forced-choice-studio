@@ -1,0 +1,231 @@
+import { AppConfig } from "@/types";
+
+export const TEMPLATES: Record<string, AppConfig> = {
+  "romantic-date": {
+    id: "romantic-date",
+    title: "Romantic Date Night",
+    theme: "pastel-romance",
+    step1: {
+      title: "Will you go out with me?",
+      subtitle: "Think carefully... although you might not have much of a choice! 😉",
+      emoji: "💖",
+      yesText: "Yes, absolutely! 🥰",
+      noText: "No thanks",
+      evasionBehavior: "teleport",
+      sensitivity: 50,
+      yesGrowthFactor: true,
+    },
+    step2: {
+      title: "YAY! I knew you'd say yes!",
+      subtitle: "The stars have aligned, and refusal was never an option anyway.",
+      emoji: "🥂",
+      buttonText: "Let's plan our date ✨",
+    },
+    step3: {
+      title: "When are you free?",
+      subtitle: "Pick the best time slot for our grand rendezvous:",
+      options: [
+        { id: "opt-fri-night", title: "Friday Night", description: "After work drinks & vibes", emoji: "🌙" },
+        { id: "opt-sat-eve", title: "Saturday Evening", description: "Prime weekend golden hour", emoji: "✨" },
+        { id: "opt-sun-brunch", title: "Sunday Brunch", description: "Lazy morning mimosas & waffles", emoji: "🥞" },
+        { id: "opt-whenever", title: "Whenever You Want", description: "My calendar is wide open for you", emoji: "💌" },
+      ],
+    },
+    step4: {
+      title: "What are we doing?",
+      subtitle: "Choose our dream activity (some options might be slightly preferred...)",
+      mode: "rigged",
+      targetId: "act-dinner-movie",
+      rejectionPhrases: [
+        "Kitchen is closed! 👨‍🍳",
+        "Sold out! Try again 😉",
+        "404: Option Not Found!",
+        "Are you sure? Re-read carefully! 🧐",
+        "Nope, the computer says no!",
+      ],
+      options: [
+        { id: "act-dinner-movie", title: "Candlelight Dinner & Rooftop", description: "5-star food, great drinks & city views", emoji: "🍷" },
+        { id: "act-gym", title: "Leg Day at the Gym", description: "Squats until we can't walk", emoji: "🏋️" },
+        { id: "act-grocery", title: "Grocery Shopping", description: "Comparing olive oil prices", emoji: "🛒" },
+        { id: "act-taxes", title: "Doing Taxes Together", description: "Organizing receipts and spreadsheets", emoji: "📊" },
+        { id: "act-stare", title: "Staring at the Wall", description: "Silently pondering life choices", emoji: "🧱" },
+        { id: "act-ikea", title: "Assembling IKEA Furniture", description: "Testing our patience with an Allen key", emoji: "🪑" },
+      ],
+    },
+    step5: {
+      title: "Official Date Confirmation",
+      subtitle: "It's locked in! Screenshot or send this pass so it's legally binding.",
+      badgeText: "CONFIRMED & SEALED",
+      confirmButtonText: "Send via WhatsApp / iMessage",
+    },
+  },
+
+  "office-mvp": {
+    id: "office-mvp",
+    title: "Office Colleague MVP Award",
+    theme: "electric-fun",
+    step1: {
+      title: "Is Michael the undisputed Colleague of the Year?",
+      subtitle: "Please submit your completely unbiased, strictly anonymous employee vote.",
+      emoji: "🏆",
+      yesText: "100% Yes, obviously! 🌟",
+      noText: "Disagree",
+      evasionBehavior: "halo",
+      sensitivity: 65,
+      yesGrowthFactor: true,
+    },
+    step2: {
+      title: "Thank you for your honesty!",
+      subtitle: "Your transparent workplace feedback has been noted in the blockchain.",
+      emoji: "🎉",
+      buttonText: "Proceed to Reward Allocation 🚀",
+    },
+    step3: {
+      title: "When should we present the trophy?",
+      subtitle: "Select the ceremonial all-hands time slot:",
+      options: [
+        { id: "opt-standup", title: "Tomorrow Standup", description: "First thing in the morning", emoji: "☕" },
+        { id: "opt-allhands", title: "Friday All-Hands", description: "In front of the entire company", emoji: "🎤" },
+        { id: "opt-slack", title: "Immediate Slack Blast", description: "With @channel sirens and confetti", emoji: "🚨" },
+        { id: "opt-now", title: "Right Now", description: "Why wait any longer?", emoji: "⚡" },
+      ],
+    },
+    step4: {
+      title: "What perk should the MVP receive?",
+      subtitle: "Cast your vote for the MVP reward package:",
+      mode: "rigged",
+      targetId: "perk-coffee-raise",
+      rejectionPhrases: [
+        "HR policy prohibits this option!",
+        "Error: Insufficient team karma!",
+        "Nice try, management rejected this!",
+        "Budget approved only for the top choice! 💰",
+      ],
+      options: [
+        { id: "perk-coffee-raise", title: "Unlimited Coffee & Big Raise", description: "Fully funded espresso bar & fat bonus", emoji: "☕" },
+        { id: "perk-pizza", title: "Single Cold Pizza Slice", description: "One slice from yesterday's meeting", emoji: "🍕" },
+        { id: "perk-pager", title: "Weekend On-Call Duty", description: "24/7 alerts for minor warnings", emoji: "📟" },
+        { id: "perk-pen", title: "A Branded Ballpoint Pen", description: "That runs out of ink in 10 minutes", emoji: "🖊️" },
+      ],
+    },
+    step5: {
+      title: "Certified MVP Declaration",
+      subtitle: "Voted by 100% of respondents in an entirely unmanipulated poll.",
+      badgeText: "EXECUTIVE SIGN-OFF",
+      confirmButtonText: "Share with the Team",
+    },
+  },
+
+  "dinner-decider": {
+    id: "dinner-decider",
+    title: "Dinner Decider",
+    theme: "pastel-romance",
+    step1: {
+      title: "Are you hungry and ready to eat?",
+      subtitle: "Tired of the 'I don't know, what do you want?' loop? Let's settle it!",
+      emoji: "🍕",
+      yesText: "Feed Me Now! 😋",
+      noText: "I'm not hungry",
+      evasionBehavior: "bamboozle",
+      sensitivity: 50,
+      yesGrowthFactor: true,
+    },
+    step2: {
+      title: "Fantastic! The chef is ready.",
+      subtitle: "Decision paralysis ends today. Prepare your taste buds.",
+      emoji: "👨‍🍳",
+      buttonText: "Pick the Menu 🍽️",
+    },
+    step3: {
+      title: "What time are we eating?",
+      subtitle: "Timing is everything when cravings strike:",
+      options: [
+        { id: "time-asap", title: "ASAP / Starving", description: "Within the next 30 minutes", emoji: "🚀" },
+        { id: "time-7pm", title: "7:30 PM", description: "Classic dinner prime time", emoji: "🕖" },
+        { id: "time-late", title: "Late Night Craving", description: "Post 9:00 PM feast", emoji: "🌙" },
+      ],
+    },
+    step4: {
+      title: "Where are we eating?",
+      subtitle: "Choose from tonight's curated dining destinations:",
+      mode: "rigged",
+      targetId: "food-sushi",
+      rejectionPhrases: [
+        "Health inspection pending! ❌",
+        "Fully booked until 2029! 📅",
+        "The chef took the day off!",
+        "Nope, you ate that yesterday!",
+        "System glitch: Please choose the tasty sushi!",
+      ],
+      options: [
+        { id: "food-sushi", title: "Fresh Sushi & Sashimi Boat", description: "Melt-in-your-mouth spicy tuna & rolls", emoji: "🍣" },
+        { id: "food-salad", title: "Plain Iceberg Lettuce", description: "No dressing, just crunchy water", emoji: "🥗" },
+        { id: "food-leftover", title: "Mystery Fridge Tupperware", description: "Estimated age: 2 to 3 weeks", emoji: "🥡" },
+        { id: "food-water", title: "Tap Water & Deep Breaths", description: "Intermittent fasting to the extreme", emoji: "💧" },
+      ],
+    },
+    step5: {
+      title: "Dinner Table Reservation Pass",
+      subtitle: "Your dining selection has been locked into the kitchen queue.",
+      badgeText: "TABLE RESERVED",
+      confirmButtonText: "Send Dining Order",
+    },
+  },
+
+  "chore-delegator": {
+    id: "chore-delegator",
+    title: "Chore Delegation",
+    theme: "minimalist-dark",
+    step1: {
+      title: "Do you agree to fair household chore division?",
+      subtitle: "In the spirit of harmony and clean countertops, sign below:",
+      emoji: "🧹",
+      yesText: "I agree to fair chores 🤝",
+      noText: "Refuse duty",
+      evasionBehavior: "shrink",
+      sensitivity: 50,
+      yesGrowthFactor: true,
+    },
+    step2: {
+      title: "Agreement Officially Sealed!",
+      subtitle: "A clean home is a happy home. Now let's assign the duties.",
+      emoji: "✨",
+      buttonText: "Assign Assignments 🧼",
+    },
+    step3: {
+      title: "When should the chores get done?",
+      subtitle: "Procrastination window selection:",
+      options: [
+        { id: "chore-tonight", title: "Tonight Before Bed", description: "Wake up to sparkling clean floors", emoji: "🛏️" },
+        { id: "chore-sat-morning", title: "Saturday Morning", description: "Blasting 2000s pop music while scrubbing", emoji: "🎵" },
+        { id: "chore-now", title: "Right Now (Commercial break)", description: "Knock it out in 15 minutes", emoji: "⏱️" },
+      ],
+    },
+    step4: {
+      title: "Select your chore assignment:",
+      subtitle: "Choose your contribution to the household:",
+      mode: "rigged",
+      targetId: "chore-dishes-trash",
+      rejectionPhrases: [
+        "This chore has already been completed!",
+        "Access denied: Requires Senior Cleaner clearance!",
+        "Broken vacuum cleaner! Try another chore!",
+        "Haha nope! Not your lucky day!",
+      ],
+      options: [
+        { id: "chore-dishes-trash", title: "Dishes & Take Out the Trash", description: "The ultimate heroic household sacrifice", emoji: "🫧" },
+        { id: "chore-couch", title: "Quality Check the Sofa", description: "Lying down to ensure cushions are comfortable", emoji: "🛋️" },
+        { id: "chore-remote", title: "Remote Control Custodian", description: "Ensuring Netflix stays on", emoji: "📺" },
+        { id: "chore-snack", title: "Official Snack Taster", description: "Testing chips for optimum crispiness", emoji: "🍿" },
+      ],
+    },
+    step5: {
+      title: "Household Duty Contract",
+      subtitle: "Binding under the unwritten laws of roommate / couple harmony.",
+      badgeText: "DUTY ASSIGNED",
+      confirmButtonText: "Send Chore Agreement",
+    },
+  },
+};
+
+export const DEFAULT_CONFIG: AppConfig = TEMPLATES["romantic-date"];

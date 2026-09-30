@@ -1,0 +1,950 @@
+"use client";
+
+import React, { useState } from "react";
+import { AppConfig, EvasionBehavior, ThemeId, ChoiceCard } from "@/types";
+import { THEMES } from "@/lib/themes";
+import {
+  Palette,
+  Zap,
+  Target,
+  Layers,
+  Plus,
+  Trash2,
+  Smile,
+  Sliders,
+  Sparkles,
+  Check,
+  ChevronDown,
+  Info,
+} from "lucide-react";
+
+interface BuilderSidebarProps {
+  config: AppConfig;
+  onChange: (newConfig: AppConfig) => void;
+}
+
+type TabType = "theme" | "evasion" | "rigging" | "cards";
+
+export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
+  config,
+  onChange,
+}) => {
+  const [activeTab, setActiveTab] = useState<TabType>("theme");
+  const [newPhrase, setNewPhrase] = useState("");
+  const [stepCopyOpen, setStepCopyOpen] = useState<number | null>(1);
+
+  const updateConfig = (updater: (prev: AppConfig) => AppConfig) => {
+    onChange(updater(config));
+  };
+
+  const handleAddPhrase = () => {
+    if (!newPhrase.trim()) return;
+    updateConfig((prev) => ({
+      ...prev,
+      step4: {
+        ...prev.step4,
+        rejectionPhrases: [...prev.step4.rejectionPhrases, newPhrase.trim()],
+      },
+    }));
+    setNewPhrase("");
+  };
+
+  const handleRemovePhrase = (index: number) => {
+    updateConfig((prev) => ({
+      ...prev,
+      step4: {
+        ...prev.step4,
+        rejectionPhrases: prev.step4.rejectionPhrases.filter((_, i) => i !== index),
+      },
+    }));
+  };
+
+  const handleAddActivityCard = () => {
+    const newCard: ChoiceCard = {
+      id: `act-${Date.now()}`,
+      title: "New Activity",
+      description: "Fun times guaranteed",
+      emoji: "✨",
+    };
+    updateConfig((prev) => ({
+      ...prev,
+      step4: {
+        ...prev.step4,
+        options: [...prev.step4.options, newCard],
+      },
+    }));
+  };
+
+  const handleRemoveActivityCard = (id: string) => {
+    updateConfig((prev) => ({
+      ...prev,
+      step4: {
+        ...prev.step4,
+        options: prev.step4.options.filter((o) => o.id !== id),
+        targetId: prev.step4.targetId === id ? prev.step4.options[0]?.id || "" : prev.step4.targetId,
+      },
+    }));
+  };
+
+  const handleAddTimeCard = () => {
+    const newCard: ChoiceCard = {
+      id: `time-${Date.now()}`,
+      title: "New Time Slot",
+      description: "Convenient window",
+      emoji: "⏰",
+    };
+    updateConfig((prev) => ({
+      ...prev,
+      step3: {
+        ...prev.step3,
+        options: [...prev.step3.options, newCard],
+      },
+    }));
+  };
+
+  const handleRemoveTimeCard = (id: string) => {
+    updateConfig((prev) => ({
+      ...prev,
+      step3: {
+        ...prev.step3,
+        options: prev.step3.options.filter((o) => o.id !== id),
+      },
+    }));
+  };
+
+  return (
+    <div className="w-full h-full bg-white border-r border-slate-200 flex flex-col overflow-hidden text-slate-800">
+      {/* Tabs bar */}
+      <div className="flex border-b border-slate-200 bg-slate-50/80 p-1.5 gap-1 select-none">
+        <button
+          type="button"
+          onClick={() => setActiveTab("theme")}
+          className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+            activeTab === "theme"
+              ? "bg-white text-slate-900 shadow-xs border border-slate-200/80"
+              : "text-slate-500 hover:text-slate-800"
+          }`}
+        >
+          <Palette className="w-3.5 h-3.5" />
+          <span>Theme & Copy</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("evasion")}
+          className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+            activeTab === "evasion"
+              ? "bg-white text-slate-900 shadow-xs border border-slate-200/80"
+              : "text-slate-500 hover:text-slate-800"
+          }`}
+        >
+          <Zap className="w-3.5 h-3.5" />
+          <span>Evasion</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("rigging")}
+          className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+            activeTab === "rigging"
+              ? "bg-white text-slate-900 shadow-xs border border-slate-200/80"
+              : "text-slate-500 hover:text-slate-800"
+          }`}
+        >
+          <Target className="w-3.5 h-3.5" />
+          <span>Rigging</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("cards")}
+          className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+            activeTab === "cards"
+              ? "bg-white text-slate-900 shadow-xs border border-slate-200/80"
+              : "text-slate-500 hover:text-slate-800"
+          }`}
+        >
+          <Layers className="w-3.5 h-3.5" />
+          <span>Cards</span>
+        </button>
+      </div>
+
+      {/* Tab Panels */}
+      <div className="flex-1 overflow-y-auto p-5 space-y-6">
+        {/* ===================== TAB 1: THEME & COPY ===================== */}
+        {activeTab === "theme" && (
+          <div className="space-y-6">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2.5">
+                Visual Theme Palette
+              </label>
+              <div className="grid grid-cols-1 gap-2.5">
+                {Object.values(THEMES).map((th) => (
+                  <button
+                    key={th.id}
+                    type="button"
+                    onClick={() => updateConfig((prev) => ({ ...prev, theme: th.id }))}
+                    className={`p-3 rounded-2xl border text-left flex items-center justify-between transition-all cursor-pointer ${
+                      config.theme === th.id
+                        ? "border-rose-500 ring-2 ring-rose-200 bg-rose-50/30"
+                        : "border-slate-200 hover:border-slate-300 bg-white"
+                    }`}
+                  >
+                    <div>
+                      <h4 className="font-bold text-xs sm:text-sm text-slate-800">
+                        {th.name}
+                      </h4>
+                      <p className="text-[11px] text-slate-500">
+                        {th.description}
+                      </p>
+                    </div>
+                    {config.theme === th.id && (
+                      <div className="w-5 h-5 rounded-full bg-rose-500 text-white flex items-center justify-center flex-shrink-0">
+                        <Check className="w-3 h-3 stroke-[3]" />
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Step Copy Customizer Accordions */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2.5">
+                Funnel Copy & Headers (All 5 Steps)
+              </label>
+
+              <div className="space-y-2.5">
+                {/* Step 1 Accordion */}
+                <div className="border border-slate-200 rounded-2xl overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setStepCopyOpen(stepCopyOpen === 1 ? null : 1)}
+                    className="w-full p-3.5 bg-slate-50 hover:bg-slate-100 flex items-center justify-between font-bold text-xs text-slate-800 text-left transition-colors"
+                  >
+                    <span>Step 1: The Pitch Question</span>
+                    <ChevronDown
+                      className={`w-4 h-4 transition-transform ${
+                        stepCopyOpen === 1 ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+                  {stepCopyOpen === 1 && (
+                    <div className="p-4 space-y-3 bg-white border-t border-slate-200">
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                          Question Title
+                        </label>
+                        <input
+                          type="text"
+                          value={config.step1.title}
+                          onChange={(e) =>
+                            updateConfig((prev) => ({
+                              ...prev,
+                              step1: { ...prev.step1, title: e.target.value },
+                            }))
+                          }
+                          className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl outline-none focus:border-rose-400"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                          Subtitle / Micro-copy
+                        </label>
+                        <input
+                          type="text"
+                          value={config.step1.subtitle}
+                          onChange={(e) =>
+                            updateConfig((prev) => ({
+                              ...prev,
+                              step1: { ...prev.step1, subtitle: e.target.value },
+                            }))
+                          }
+                          className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl outline-none focus:border-rose-400"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                            Yes Button Label
+                          </label>
+                          <input
+                            type="text"
+                            value={config.step1.yesText}
+                            onChange={(e) =>
+                              updateConfig((prev) => ({
+                                ...prev,
+                                step1: { ...prev.step1, yesText: e.target.value },
+                              }))
+                            }
+                            className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl outline-none focus:border-rose-400"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                            No Button Label
+                          </label>
+                          <input
+                            type="text"
+                            value={config.step1.noText}
+                            onChange={(e) =>
+                              updateConfig((prev) => ({
+                                ...prev,
+                                step1: { ...prev.step1, noText: e.target.value },
+                              }))
+                            }
+                            className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl outline-none focus:border-rose-400"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Step 2 Accordion */}
+                <div className="border border-slate-200 rounded-2xl overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setStepCopyOpen(stepCopyOpen === 2 ? null : 2)}
+                    className="w-full p-3.5 bg-slate-50 hover:bg-slate-100 flex items-center justify-between font-bold text-xs text-slate-800 text-left transition-colors"
+                  >
+                    <span>Step 2: Celebration & Affirmation</span>
+                    <ChevronDown
+                      className={`w-4 h-4 transition-transform ${
+                        stepCopyOpen === 2 ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+                  {stepCopyOpen === 2 && (
+                    <div className="p-4 space-y-3 bg-white border-t border-slate-200">
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                          Celebration Headline
+                        </label>
+                        <input
+                          type="text"
+                          value={config.step2.title}
+                          onChange={(e) =>
+                            updateConfig((prev) => ({
+                              ...prev,
+                              step2: { ...prev.step2, title: e.target.value },
+                            }))
+                          }
+                          className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl outline-none focus:border-rose-400"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                          Celebration Subtitle
+                        </label>
+                        <input
+                          type="text"
+                          value={config.step2.subtitle}
+                          onChange={(e) =>
+                            updateConfig((prev) => ({
+                              ...prev,
+                              step2: { ...prev.step2, subtitle: e.target.value },
+                            }))
+                          }
+                          className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl outline-none focus:border-rose-400"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                          Button Text
+                        </label>
+                        <input
+                          type="text"
+                          value={config.step2.buttonText}
+                          onChange={(e) =>
+                            updateConfig((prev) => ({
+                              ...prev,
+                              step2: { ...prev.step2, buttonText: e.target.value },
+                            }))
+                          }
+                          className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl outline-none focus:border-rose-400"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Step 3 Accordion */}
+                <div className="border border-slate-200 rounded-2xl overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setStepCopyOpen(stepCopyOpen === 3 ? null : 3)}
+                    className="w-full p-3.5 bg-slate-50 hover:bg-slate-100 flex items-center justify-between font-bold text-xs text-slate-800 text-left transition-colors"
+                  >
+                    <span>Step 3: Date & Time Header</span>
+                    <ChevronDown
+                      className={`w-4 h-4 transition-transform ${
+                        stepCopyOpen === 3 ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+                  {stepCopyOpen === 3 && (
+                    <div className="p-4 space-y-3 bg-white border-t border-slate-200">
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                          Header Title
+                        </label>
+                        <input
+                          type="text"
+                          value={config.step3.title}
+                          onChange={(e) =>
+                            updateConfig((prev) => ({
+                              ...prev,
+                              step3: { ...prev.step3, title: e.target.value },
+                            }))
+                          }
+                          className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl outline-none focus:border-rose-400"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                          Subtitle
+                        </label>
+                        <input
+                          type="text"
+                          value={config.step3.subtitle}
+                          onChange={(e) =>
+                            updateConfig((prev) => ({
+                              ...prev,
+                              step3: { ...prev.step3, subtitle: e.target.value },
+                            }))
+                          }
+                          className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl outline-none focus:border-rose-400"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Step 4 Accordion */}
+                <div className="border border-slate-200 rounded-2xl overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setStepCopyOpen(stepCopyOpen === 4 ? null : 4)}
+                    className="w-full p-3.5 bg-slate-50 hover:bg-slate-100 flex items-center justify-between font-bold text-xs text-slate-800 text-left transition-colors"
+                  >
+                    <span>Step 4: Activity Header</span>
+                    <ChevronDown
+                      className={`w-4 h-4 transition-transform ${
+                        stepCopyOpen === 4 ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+                  {stepCopyOpen === 4 && (
+                    <div className="p-4 space-y-3 bg-white border-t border-slate-200">
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                          Header Title
+                        </label>
+                        <input
+                          type="text"
+                          value={config.step4.title}
+                          onChange={(e) =>
+                            updateConfig((prev) => ({
+                              ...prev,
+                              step4: { ...prev.step4, title: e.target.value },
+                            }))
+                          }
+                          className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl outline-none focus:border-rose-400"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                          Subtitle
+                        </label>
+                        <input
+                          type="text"
+                          value={config.step4.subtitle}
+                          onChange={(e) =>
+                            updateConfig((prev) => ({
+                              ...prev,
+                              step4: { ...prev.step4, subtitle: e.target.value },
+                            }))
+                          }
+                          className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl outline-none focus:border-rose-400"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Step 5 Accordion */}
+                <div className="border border-slate-200 rounded-2xl overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setStepCopyOpen(stepCopyOpen === 5 ? null : 5)}
+                    className="w-full p-3.5 bg-slate-50 hover:bg-slate-100 flex items-center justify-between font-bold text-xs text-slate-800 text-left transition-colors"
+                  >
+                    <span>Step 5: Pass Card & Summary</span>
+                    <ChevronDown
+                      className={`w-4 h-4 transition-transform ${
+                        stepCopyOpen === 5 ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+                  {stepCopyOpen === 5 && (
+                    <div className="p-4 space-y-3 bg-white border-t border-slate-200">
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                          Pass Title
+                        </label>
+                        <input
+                          type="text"
+                          value={config.step5.title}
+                          onChange={(e) =>
+                            updateConfig((prev) => ({
+                              ...prev,
+                              step5: { ...prev.step5, title: e.target.value },
+                            }))
+                          }
+                          className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl outline-none focus:border-rose-400"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                          Badge Label
+                        </label>
+                        <input
+                          type="text"
+                          value={config.step5.badgeText}
+                          onChange={(e) =>
+                            updateConfig((prev) => ({
+                              ...prev,
+                              step5: { ...prev.step5, badgeText: e.target.value },
+                            }))
+                          }
+                          className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl outline-none focus:border-rose-400"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ===================== TAB 2: EVASION ENGINE ===================== */}
+        {activeTab === "evasion" && (
+          <div className="space-y-6">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                "No" Button Evasion Model
+              </label>
+              <select
+                value={config.step1.evasionBehavior}
+                onChange={(e) =>
+                  updateConfig((prev) => ({
+                    ...prev,
+                    step1: {
+                      ...prev.step1,
+                      evasionBehavior: e.target.value as EvasionBehavior,
+                    },
+                  }))
+                }
+                className="w-full px-3.5 py-2.5 text-xs font-semibold border border-slate-200 rounded-xl bg-white outline-none focus:border-rose-500 shadow-xs cursor-pointer"
+              >
+                <option value="teleport">Option 1: Teleport (Touch & Cursor Jump)</option>
+                <option value="halo">Option 2: Hitbox Proximity Halo (Repulsive Vector)</option>
+                <option value="shrink">Option 3: Decoy Shrink & Morph (No Shrinks / Yes Expands)</option>
+                <option value="bamboozle">Option 4: Instant Bamboozle (Position & Text Swap)</option>
+              </select>
+
+              <div className="mt-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200/80 text-[11px] text-slate-600 flex items-start gap-2">
+                <Info className="w-4 h-4 text-slate-400 flex-shrink-0 mt-0.5" />
+                <span>
+                  {config.step1.evasionBehavior === "teleport" &&
+                    "Button teleports to random bounded coordinates upon hover or touchstart."}
+                  {config.step1.evasionBehavior === "halo" &&
+                    "Radial repulsion physics pushes the button away whenever cursor enters the halo radius."}
+                  {config.step1.evasionBehavior === "shrink" &&
+                    "No button decreases scale by 25% on hover/touch until it disappears; Yes button balloons up."}
+                  {config.step1.evasionBehavior === "bamboozle" &&
+                    "Buttons swap places instantaneously on touch or hover, trapping the user into clicking Yes."}
+                </span>
+              </div>
+            </div>
+
+            {/* Sensitivity Slider */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  Proximity Sensitivity
+                </label>
+                <span className="text-xs font-mono font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-md">
+                  {config.step1.sensitivity} px
+                </span>
+              </div>
+              <input
+                type="range"
+                min={20}
+                max={100}
+                value={config.step1.sensitivity}
+                onChange={(e) =>
+                  updateConfig((prev) => ({
+                    ...prev,
+                    step1: { ...prev.step1, sensitivity: Number(e.target.value) },
+                  }))
+                }
+                className="w-full accent-rose-500 cursor-pointer"
+              />
+              <div className="flex justify-between text-[10px] text-slate-400 mt-1">
+                <span>20px (Stealthy)</span>
+                <span>100px (Extra Sensitive)</span>
+              </div>
+            </div>
+
+            {/* Yes Growth Factor Toggle */}
+            <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50/50 flex items-center justify-between">
+              <div>
+                <h4 className="font-bold text-xs text-slate-800">
+                  "Yes" Button Growth Factor
+                </h4>
+                <p className="text-[11px] text-slate-500">
+                  Enlarge the Yes button on every failed evasion attempt (+10% miss)
+                </p>
+              </div>
+              <input
+                type="checkbox"
+                checked={config.step1.yesGrowthFactor}
+                onChange={(e) =>
+                  updateConfig((prev) => ({
+                    ...prev,
+                    step1: { ...prev.step1, yesGrowthFactor: e.target.checked },
+                  }))
+                }
+                className="w-5 h-5 accent-rose-500 rounded cursor-pointer"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* ===================== TAB 3: RIGGING ENGINE ===================== */}
+        {activeTab === "rigging" && (
+          <div className="space-y-6">
+            {/* Mode Toggle */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                Step 4 Selection Mode
+              </label>
+              <div className="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-2xl">
+                <button
+                  type="button"
+                  onClick={() =>
+                    updateConfig((prev) => ({
+                      ...prev,
+                      step4: { ...prev.step4, mode: "free" },
+                    }))
+                  }
+                  className={`py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    config.step4.mode === "free"
+                      ? "bg-white text-slate-900 shadow-xs"
+                      : "text-slate-500 hover:text-slate-800"
+                  }`}
+                >
+                  Free Choice
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    updateConfig((prev) => ({
+                      ...prev,
+                      step4: { ...prev.step4, mode: "rigged" },
+                    }))
+                  }
+                  className={`py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                    config.step4.mode === "rigged"
+                      ? "bg-rose-500 text-white shadow-xs"
+                      : "text-slate-500 hover:text-slate-800"
+                  }`}
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Only One Path (Rigged)</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Target Card Selection */}
+            {config.step4.mode === "rigged" && (
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                  Designated "Target / Correct" Choice
+                </label>
+                <p className="text-[11px] text-slate-500 mb-3">
+                  All other cards will violently shake and display funny excuses when tapped.
+                </p>
+
+                <div className="space-y-2">
+                  {config.step4.options.map((opt) => (
+                    <label
+                      key={opt.id}
+                      className={`p-3 rounded-2xl border flex items-center gap-3 cursor-pointer transition-all ${
+                        config.step4.targetId === opt.id
+                          ? "border-rose-500 bg-rose-50/40 ring-1 ring-rose-200"
+                          : "border-slate-200 hover:border-slate-300 bg-white"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="targetChoice"
+                        value={opt.id}
+                        checked={config.step4.targetId === opt.id}
+                        onChange={() =>
+                          updateConfig((prev) => ({
+                            ...prev,
+                            step4: { ...prev.step4, targetId: opt.id },
+                          }))
+                        }
+                        className="accent-rose-500 w-4 h-4 cursor-pointer"
+                      />
+                      <span className="text-xl">{opt.emoji}</span>
+                      <div className="flex-1">
+                        <span className="font-bold text-xs text-slate-800 block">
+                          {opt.title}
+                        </span>
+                        <span className="text-[11px] text-slate-400">
+                          {opt.description}
+                        </span>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Custom Rejection Phrases Manager */}
+            {config.step4.mode === "rigged" && (
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                  Humorous Rejection Phrases
+                </label>
+                <div className="flex gap-2 mb-3">
+                  <input
+                    type="text"
+                    placeholder="e.g., Sold out! Try again 😉"
+                    value={newPhrase}
+                    onChange={(e) => setNewPhrase(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleAddPhrase()}
+                    className="flex-1 px-3 py-2 text-xs border border-slate-200 rounded-xl outline-none focus:border-rose-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddPhrase}
+                    className="px-3 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold flex items-center gap-1 cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add</span>
+                  </button>
+                </div>
+
+                <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                  {config.step4.rejectionPhrases.map((phrase, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200/70 text-xs text-slate-700"
+                    >
+                      <span className="truncate pr-2 font-medium">{phrase}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemovePhrase(idx)}
+                        className="text-slate-400 hover:text-rose-500 transition-colors p-1"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ===================== TAB 4: CARDS MANAGER ===================== */}
+        {activeTab === "cards" && (
+          <div className="space-y-6">
+            {/* Step 3 Time Slots Manager */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  Step 3 Time Options
+                </label>
+                <button
+                  type="button"
+                  onClick={handleAddTimeCard}
+                  className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer"
+                >
+                  <Plus className="w-3 h-3" /> Add Time
+                </button>
+              </div>
+
+              <div className="space-y-2">
+                {config.step3.options.map((opt, i) => (
+                  <div
+                    key={opt.id}
+                    className="p-3 bg-white rounded-2xl border border-slate-200 space-y-2"
+                  >
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={opt.emoji || "⏰"}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          updateConfig((prev) => ({
+                            ...prev,
+                            step3: {
+                              ...prev.step3,
+                              options: prev.step3.options.map((o) =>
+                                o.id === opt.id ? { ...o, emoji: val } : o
+                              ),
+                            },
+                          }));
+                        }}
+                        className="w-10 text-center py-1 text-sm border border-slate-200 rounded-lg outline-none"
+                      />
+                      <input
+                        type="text"
+                        value={opt.title}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          updateConfig((prev) => ({
+                            ...prev,
+                            step3: {
+                              ...prev.step3,
+                              options: prev.step3.options.map((o) =>
+                                o.id === opt.id ? { ...o, title: val } : o
+                              ),
+                            },
+                          }));
+                        }}
+                        className="flex-1 py-1 px-2.5 text-xs font-bold border border-slate-200 rounded-lg outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveTimeCard(opt.id)}
+                        disabled={config.step3.options.length <= 1}
+                        className="text-slate-400 hover:text-rose-500 disabled:opacity-30 p-1"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Short description"
+                      value={opt.description || ""}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        updateConfig((prev) => ({
+                          ...prev,
+                          step3: {
+                            ...prev.step3,
+                            options: prev.step3.options.map((o) =>
+                              o.id === opt.id ? { ...o, description: val } : o
+                            ),
+                          },
+                        }));
+                      }}
+                      className="w-full py-1 px-2.5 text-xs text-slate-500 border border-slate-200 rounded-lg outline-none"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Step 4 Activity Cards Manager */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  Step 4 Activities
+                </label>
+                <button
+                  type="button"
+                  onClick={handleAddActivityCard}
+                  className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer"
+                >
+                  <Plus className="w-3 h-3" /> Add Activity
+                </button>
+              </div>
+
+              <div className="space-y-2">
+                {config.step4.options.map((opt) => (
+                  <div
+                    key={opt.id}
+                    className="p-3 bg-white rounded-2xl border border-slate-200 space-y-2"
+                  >
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={opt.emoji || "✨"}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          updateConfig((prev) => ({
+                            ...prev,
+                            step4: {
+                              ...prev.step4,
+                              options: prev.step4.options.map((o) =>
+                                o.id === opt.id ? { ...o, emoji: val } : o
+                              ),
+                            },
+                          }));
+                        }}
+                        className="w-10 text-center py-1 text-sm border border-slate-200 rounded-lg outline-none"
+                      />
+                      <input
+                        type="text"
+                        value={opt.title}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          updateConfig((prev) => ({
+                            ...prev,
+                            step4: {
+                              ...prev.step4,
+                              options: prev.step4.options.map((o) =>
+                                o.id === opt.id ? { ...o, title: val } : o
+                              ),
+                            },
+                          }));
+                        }}
+                        className="flex-1 py-1 px-2.5 text-xs font-bold border border-slate-200 rounded-lg outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveActivityCard(opt.id)}
+                        disabled={config.step4.options.length <= 1}
+                        className="text-slate-400 hover:text-rose-500 disabled:opacity-30 p-1"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Short description"
+                      value={opt.description || ""}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        updateConfig((prev) => ({
+                          ...prev,
+                          step4: {
+                            ...prev.step4,
+                            options: prev.step4.options.map((o) =>
+                              o.id === opt.id ? { ...o, description: val } : o
+                            ),
+                          },
+                        }));
+                      }}
+                      className="w-full py-1 px-2.5 text-xs text-slate-500 border border-slate-200 rounded-lg outline-none"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
