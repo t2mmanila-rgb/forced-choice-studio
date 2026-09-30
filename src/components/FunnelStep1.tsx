@@ -22,8 +22,9 @@ export const FunnelStep1: React.FC<FunnelStep1Props> = ({ config, themeId, onYes
   const [showEscapeModal, setShowEscapeModal] = useState(false);
 
   const theme = THEMES[themeId] || THEMES["pastel-romance"];
+  const bamboozleDistance = 140;
 
-  // Yes button scale growth calculation - safely capped so it never breaks layout
+  // Yes button scale growth calculation - safely capped
   const rawScale = config.yesGrowthFactor
     ? config.evasionBehavior === "shrink"
       ? 1 + (1 - shrinkScale) * 0.4
@@ -37,6 +38,7 @@ export const FunnelStep1: React.FC<FunnelStep1Props> = ({ config, themeId, onYes
     if (config.evasionBehavior === "shrink") {
       setShrinkScale((prev) => Math.max(0.1, prev - 0.22));
     } else if (config.evasionBehavior === "bamboozle") {
+      // Toggle physical position swap
       setIsBamboozled((prev) => !prev);
     }
   };
@@ -87,21 +89,29 @@ export const FunnelStep1: React.FC<FunnelStep1Props> = ({ config, themeId, onYes
         {config.subtitle}
       </motion.p>
 
-      {/* Dual Button Arena - always accessible and centered */}
+      {/* Dual Button Arena - physical position swap in Bamboozle mode */}
       <div className="relative w-full max-w-md min-h-[110px] flex items-center justify-center gap-3 sm:gap-4 my-2 px-2">
-        {/* Positive "Yes" Button (The one we WANT them to choose) */}
+        {/* Positive "Yes" Button: ALWAYS affirmative, swaps into No's spot in Bamboozle mode */}
         <motion.button
           type="button"
           onClick={handleYesClick}
-          animate={{ scale: yesScale }}
+          animate={{
+            x:
+              config.evasionBehavior === "bamboozle"
+                ? isBamboozled
+                  ? bamboozleDistance
+                  : 0
+                : 0,
+            scale: yesScale,
+          }}
           whileHover={{ scale: yesScale * 1.05 }}
           whileTap={{ scale: yesScale * 0.95 }}
-          transition={{ type: "spring", stiffness: 400, damping: 20 }}
-          className={`z-20 font-black px-6 sm:px-8 py-3.5 sm:py-4 rounded-full transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xl flex-shrink-0 ${theme.primaryButton}`}
+          transition={{ type: "spring", stiffness: 450, damping: 26 }}
+          className={`z-20 font-black px-6 sm:px-8 py-3.5 sm:py-4 rounded-full transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-xl flex-shrink-0 ${theme.primaryButton}`}
         >
           <Heart className="w-5 h-5 fill-current flex-shrink-0" />
           <span className="whitespace-nowrap text-sm sm:text-base">
-            {isBamboozled ? config.noText : config.yesText}
+            {config.yesText}
           </span>
         </motion.button>
 
@@ -113,8 +123,10 @@ export const FunnelStep1: React.FC<FunnelStep1Props> = ({ config, themeId, onYes
             sensitivity={config.sensitivity}
             containerRef={containerRef}
             onEvade={handleEvade}
+            onBamboozleHit={handleYesClick}
             isBamboozled={isBamboozled}
             shrinkScale={shrinkScale}
+            bamboozleOffset={bamboozleDistance}
             className={theme.secondaryButton}
           />
         </div>

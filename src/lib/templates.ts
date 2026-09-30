@@ -124,7 +124,7 @@ export const TEMPLATES: Record<string, AppConfig> = {
       title: "Are you hungry and ready to eat?",
       subtitle: "Tired of the 'I don't know, what do you want?' loop? Let's settle it!",
       emoji: "🍕",
-      yesText: "Feed Me Now! 😋",
+      yesText: "Yes, Feed Me Now! 😋",
       noText: "I'm not hungry",
       evasionBehavior: "bamboozle",
       sensitivity: 50,

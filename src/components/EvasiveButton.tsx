@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { EvasionBehavior } from "@/types";
 
 interface EvasiveButtonProps {
@@ -10,9 +10,11 @@ interface EvasiveButtonProps {
   sensitivity: number; // in pixels
   containerRef: React.RefObject<HTMLDivElement>;
   onEvade: () => void;
+  onBamboozleHit?: () => void;
   className?: string;
   isBamboozled?: boolean;
   shrinkScale?: number;
+  bamboozleOffset?: number;
 }
 
 export const EvasiveButton: React.FC<EvasiveButtonProps> = ({
@@ -21,13 +23,14 @@ export const EvasiveButton: React.FC<EvasiveButtonProps> = ({
   sensitivity,
   containerRef,
   onEvade,
+  onBamboozleHit,
   className = "",
   isBamboozled = false,
   shrinkScale = 1,
+  bamboozleOffset = 140,
 }) => {
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [position, setPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
-  const [hasMoved, setHasMoved] = useState(false);
 
   // Helper to get bounded random coordinate
   const getRandomBoundedOffset = useCallback(() => {
@@ -43,8 +46,8 @@ export const EvasiveButton: React.FC<EvasiveButtonProps> = ({
     const padding = 20;
     const maxX = containerRect.width / 2 - btnRect.width / 2 - padding;
     const minX = -maxX;
-    const maxY = 140;
-    const minY = -120;
+    const maxY = 130;
+    const minY = -110;
 
     let targetX = (Math.random() * 2 - 1) * maxX;
     let targetY = (Math.random() * 2 - 1) * maxY;
@@ -67,7 +70,6 @@ export const EvasiveButton: React.FC<EvasiveButtonProps> = ({
   const handleEvade = useCallback(
     (e?: React.SyntheticEvent | MouseEvent | TouchEvent) => {
       if (e) {
-        // Prevent default to disable mobile touch tap & zoom
         if (e.cancelable) e.preventDefault();
         e.stopPropagation();
       }
@@ -77,14 +79,11 @@ export const EvasiveButton: React.FC<EvasiveButtonProps> = ({
       if (behavior === "teleport") {
         const nextPos = getRandomBoundedOffset();
         setPosition(nextPos);
-        setHasMoved(true);
       } else if (behavior === "halo") {
-        // Jump away along vector
         const nextPos = getRandomBoundedOffset();
         setPosition(nextPos);
-        setHasMoved(true);
       }
-      // "shrink" and "bamboozle" handled via props / parent coordination
+      // "shrink" and "bamboozle" handled via props & parent coordination
     },
     [behavior, getRandomBoundedOffset, onEvade]
   );
@@ -106,9 +105,7 @@ export const EvasiveButton: React.FC<EvasiveButtonProps> = ({
       const triggerRadius = sensitivity + 40; // 60px to 140px
 
       if (distance < triggerRadius) {
-        // Calculate repulsive velocity vector
         const angle = Math.atan2(dy, dx);
-        // Push in opposite direction (angle + PI)
         const pushDistance = 140;
         const targetX = position.x - Math.cos(angle) * pushDistance;
         const targetY = position.y - Math.sin(angle) * pushDistance;
@@ -123,7 +120,6 @@ export const EvasiveButton: React.FC<EvasiveButtonProps> = ({
           x: Math.max(minX, Math.min(maxX, targetX)),
           y: Math.max(minY, Math.min(maxY, targetY)),
         });
-        setHasMoved(true);
         onEvade();
       }
     };
@@ -151,15 +147,20 @@ export const EvasiveButton: React.FC<EvasiveButtonProps> = ({
         WebkitUserSelect: "none",
       }}
       animate={{
-        x: behavior === "bamboozle" ? 0 : position.x,
+        x:
+          behavior === "bamboozle"
+            ? isBamboozled
+              ? -bamboozleOffset
+              : 0
+            : position.x,
         y: behavior === "bamboozle" ? 0 : position.y,
         scale: behavior === "shrink" ? shrinkScale : 1,
-        opacity: behavior === "shrink" && shrinkScale < 0.1 ? 0 : 1,
+        opacity: behavior === "shrink" && shrinkScale < 0.15 ? 0 : 1,
       }}
       transition={{
         type: "spring",
-        stiffness: 400,
-        damping: 24,
+        stiffness: 450,
+        damping: 26,
         mass: 0.6,
       }}
       onMouseEnter={(e) => {
@@ -169,10 +170,13 @@ export const EvasiveButton: React.FC<EvasiveButtonProps> = ({
         handleEvade(e);
       }}
       onClick={(e) => {
-        // In case someone manages to click it
-        handleEvade(e);
+        if (behavior === "bamboozle" && onBamboozleHit) {
+          onBamboozleHit();
+        } else {
+          handleEvade(e);
+        }
       }}
-      className={`relative inline-flex items-center justify-center font-medium px-6 py-3 rounded-full transition-colors cursor-pointer select-none ${className}`}
+      className={`relative inline-flex items-center justify-center font-semibold px-6 py-3.5 rounded-full transition-colors cursor-pointer select-none ${className}`}
     >
       {/* Invisible buffer halo zone around button */}
       <span
@@ -182,7 +186,7 @@ export const EvasiveButton: React.FC<EvasiveButtonProps> = ({
         aria-hidden="true"
       />
       <span className="relative z-10 pointer-events-none whitespace-nowrap">
-        {isBamboozled ? "Yes! 🥰" : text}
+        {text}
       </span>
     </motion.button>
   );
