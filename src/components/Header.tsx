@@ -23,6 +23,7 @@ interface HeaderProps {
   onSelectTemplate: (templateKey: string) => void;
   onOpenShareModal: () => void;
   onResetDefaults: () => void;
+  onOpenWizard?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -32,6 +33,7 @@ export const Header: React.FC<HeaderProps> = ({
   onSelectTemplate,
   onOpenShareModal,
   onResetDefaults,
+  onOpenWizard,
 }) => {
   const [copied, setCopied] = useState(false);
 
@@ -119,6 +121,19 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Right Actions */}
       <div className="flex items-center gap-2 sm:gap-2.5">
+        {/* Custom Wizard Launcher */}
+        {onOpenWizard && (
+          <button
+            type="button"
+            onClick={onOpenWizard}
+            className="flex items-center gap-1.5 py-1.5 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-rose-500 hover:from-amber-600 hover:to-rose-600 text-white text-xs font-bold shadow-xs transition-all cursor-pointer"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Custom Wizard</span>
+            <span className="sm:hidden">Wizard</span>
+          </button>
+        )}
+
         {/* Quick Copy Link */}
         <button
           type="button"

@@ -10,6 +10,7 @@ import { BuilderSidebar } from "@/components/BuilderSidebar";
 import { DeviceFrame } from "@/components/DeviceFrame";
 import { FunnelContainer } from "@/components/FunnelContainer";
 import { ShareModal } from "@/components/ShareModal";
+import { CustomTemplateWizard } from "@/components/CustomTemplateWizard";
 import { THEMES } from "@/lib/themes";
 import { Edit3 } from "lucide-react";
 
@@ -19,6 +20,7 @@ function StudioApp() {
   const [mode, setMode] = useState<"builder" | "play">("builder");
   const [device, setDevice] = useState<"desktop" | "mobile">("mobile");
   const [isShareOpen, setIsShareOpen] = useState(false);
+  const [isWizardOpen, setIsWizardOpen] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
 
   // Initialize from URL parameters or hash on mount
@@ -101,6 +103,7 @@ function StudioApp() {
         onSelectTemplate={handleSelectTemplate}
         onOpenShareModal={() => setIsShareOpen(true)}
         onResetDefaults={handleResetDefaults}
+        onOpenWizard={() => setIsWizardOpen(true)}
       />
 
       {/* Main Split-Screen Workspace */}
@@ -111,6 +114,7 @@ function StudioApp() {
             config={config}
             onChange={setConfig}
             onSelectTemplate={handleSelectTemplate}
+            onOpenWizard={() => setIsWizardOpen(true)}
           />
         </div>
 
@@ -128,6 +132,15 @@ function StudioApp() {
         onClose={() => setIsShareOpen(false)}
         config={config}
         onSelectTemplate={handleSelectTemplate}
+      />
+
+      {/* Guided Custom Template Creator Wizard */}
+      <CustomTemplateWizard
+        isOpen={isWizardOpen}
+        onClose={() => setIsWizardOpen(false)}
+        onApply={(newConfig) => {
+          setConfig(newConfig);
+        }}
       />
     </div>
   );

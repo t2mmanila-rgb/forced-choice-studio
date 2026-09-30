@@ -23,6 +23,7 @@ interface BuilderSidebarProps {
   config: AppConfig;
   onChange: (newConfig: AppConfig) => void;
   onSelectTemplate: (templateKey: string) => void;
+  onOpenWizard?: () => void;
 }
 
 type TabType = "templates" | "theme" | "evasion" | "rigging" | "cards";
@@ -31,6 +32,7 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
   config,
   onChange,
   onSelectTemplate,
+  onOpenWizard,
 }) => {
   const [activeTab, setActiveTab] = useState<TabType>("templates");
   const [newPhrase, setNewPhrase] = useState("");
@@ -202,6 +204,31 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
               <p className="text-xs text-slate-500 mb-4">
                 Select a pre-configured scenario. You can customize the theme, questions, and rigged logic right after!
               </p>
+            </div>
+
+            {/* Custom Guided Template Creator Launcher */}
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-500/10 via-rose-500/10 to-pink-500/10 border-2 border-dashed border-rose-300 flex flex-col gap-3 shadow-xs">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-rose-500 text-white flex items-center justify-center flex-shrink-0 shadow-xs">
+                  <Sparkles className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="font-extrabold text-xs sm:text-sm text-slate-900">
+                    Custom Template Wizard
+                  </h4>
+                  <p className="text-[11px] text-slate-600">
+                    Step-by-step custom guide with smart suggestions
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={onOpenWizard}
+                className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-500 via-rose-500 to-pink-500 hover:from-amber-600 hover:to-pink-600 text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer transform hover:scale-[1.01]"
+              >
+                <span>Launch Guided Creator ✨</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
             </div>
 
             <div className="grid grid-cols-1 gap-3">

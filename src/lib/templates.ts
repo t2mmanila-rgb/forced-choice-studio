@@ -226,6 +226,62 @@ export const TEMPLATES: Record<string, AppConfig> = {
       confirmButtonText: "Send Chore Agreement",
     },
   },
+
+  "favourite-parent": {
+    id: "favourite-parent",
+    title: "Favourite Parent Decider",
+    theme: "electric-fun",
+    step1: {
+      title: "Who is your undisputed favourite parent?",
+      subtitle: "Think carefully... although household science already knows! 😉",
+      emoji: "👨‍👩‍👧",
+      yesText: "Obviously Mom / Dad! 🏆",
+      noText: "I love both equally",
+      evasionBehavior: "halo",
+      sensitivity: 55,
+      yesGrowthFactor: true,
+    },
+    step2: {
+      title: "I knew it! The truth sets you free.",
+      subtitle: "Your official parental preference has been permanently recorded in the family archive.",
+      emoji: "👑",
+      buttonText: "Proceed to Reward Setup 🎁",
+    },
+    step3: {
+      title: "When are you visiting your favourite parent?",
+      subtitle: "Select the mandatory quality time window:",
+      options: [
+        { id: "parent-sunday", title: "This Sunday Dinner", description: "Home-cooked food & family gossip", emoji: "🍲" },
+        { id: "parent-weekend", title: "Every Single Weekend", description: "Parental bliss & free laundry", emoji: "🧺" },
+        { id: "parent-now", title: "Right Now / On My Way", description: "Already in the car heading over", emoji: "🚗" },
+        { id: "parent-holiday", title: "Mother's / Father's Day", description: "The annual official tribute", emoji: "💐" },
+      ],
+    },
+    step4: {
+      title: "What reward does your favourite parent get?",
+      subtitle: "Cast your vote for their parental compensation package:",
+      mode: "rigged",
+      targetId: "reward-hugs-tech",
+      rejectionPhrases: [
+        "Family Court policy prohibits this cheap choice! 👨‍⚖️",
+        "Error: Minimum love requirement not met! 🚨",
+        "Nice try! They raised you better than that! 😂",
+        "Budget approved only for the #1 parent package! 💖",
+      ],
+      options: [
+        { id: "reward-hugs-tech", title: "Unlimited Hugs, Love & Free Tech Support", description: "Fixing their Wi-Fi forever + 5-star dinner treat", emoji: "💖" },
+        { id: "reward-gascard", title: "Gas Station Greeting Card", description: "Bought 3 minutes before arriving", emoji: "⛽" },
+        { id: "reward-call", title: "A 15-Second Phone Call", description: "'Hey gotta run quick' once a month", emoji: "📱" },
+        { id: "reward-socks", title: "Single Pair of Plain White Socks", description: "Wrong shoe size included", emoji: "🧦" },
+      ],
+    },
+    step5: {
+      title: "Official Favourite Parent Award",
+      subtitle: "Certified and ratified in an entirely unbiased, non-negotiable household poll.",
+      badgeText: "PARENT OF THE DECADE",
+      confirmButtonText: "Share with Family Group Chat",
+    },
+  },
 };
 
 export const DEFAULT_CONFIG: AppConfig = TEMPLATES["romantic-date"];
