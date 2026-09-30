@@ -66,3 +66,18 @@ export interface FunnelSelections {
   step3OptionId: string | null;
   step4OptionId: string | null;
 }
+
+export interface UserProfile {
+  id: string;
+  name: string;
+  email?: string;
+  avatarEmoji?: string;
+  createdAt: string;
+}
+
+export interface SavedTemplateRecord {
+  id: string;
+  title: string;
+  updatedAt: string;
+  config: AppConfig;
+}

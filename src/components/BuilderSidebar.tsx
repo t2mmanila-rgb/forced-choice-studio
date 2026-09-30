@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { AppConfig, EvasionBehavior, ThemeId, ChoiceCard } from "@/types";
+import { AppConfig, EvasionBehavior, ThemeId, ChoiceCard, UserProfile, SavedTemplateRecord } from "@/types";
 import { THEMES } from "@/lib/themes";
 import { TEMPLATES } from "@/lib/templates";
 import {
@@ -17,6 +17,9 @@ import {
   Check,
   ArrowRight,
   Flame,
+  Lock,
+  FolderHeart,
+  Clock,
 } from "lucide-react";
 
 interface BuilderSidebarProps {
@@ -24,6 +27,11 @@ interface BuilderSidebarProps {
   onChange: (newConfig: AppConfig) => void;
   onSelectTemplate: (templateKey: string) => void;
   onOpenWizard?: () => void;
+  user: UserProfile | null;
+  onOpenLogin: (reason?: string) => void;
+  savedTemplates: SavedTemplateRecord[];
+  onSelectSavedTemplate: (record: SavedTemplateRecord) => void;
+  onDeleteSavedTemplate: (id: string) => void;
 }
 
 type TabType = "templates" | "theme" | "evasion" | "rigging" | "cards";
@@ -33,6 +41,11 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
   onChange,
   onSelectTemplate,
   onOpenWizard,
+  user,
+  onOpenLogin,
+  savedTemplates,
+  onSelectSavedTemplate,
+  onDeleteSavedTemplate,
 }) => {
   const [activeTab, setActiveTab] = useState<TabType>("templates");
   const [newPhrase, setNewPhrase] = useState("");
@@ -223,9 +236,16 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
               </div>
               <button
                 type="button"
-                onClick={onOpenWizard}
+                onClick={() => {
+                  if (!user) {
+                    onOpenLogin("Sign in to create your own custom templates");
+                  } else if (onOpenWizard) {
+                    onOpenWizard();
+                  }
+                }}
                 className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-500 via-rose-500 to-pink-500 hover:from-amber-600 hover:to-pink-600 text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer transform hover:scale-[1.01]"
               >
+                {!user && <Lock className="w-3.5 h-3.5" />}
                 <span>Launch Guided Creator ✨</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
@@ -277,6 +297,91 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
                   </button>
                 );
               })}
+            </div>
+
+            {/* ================= My Saved Templates Section ================= */}
+            <div className="pt-4 border-t border-slate-200">
+              <div className="flex items-center justify-between mb-2.5">
+                <div className="flex items-center gap-1.5">
+                  <FolderHeart className="w-4 h-4 text-rose-500" />
+                  <h4 className="font-extrabold text-xs text-slate-800 uppercase tracking-wider">
+                    My Saved Templates
+                  </h4>
+                </div>
+                {user && (
+                  <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+                    {savedTemplates.length} saved
+                  </span>
+                )}
+              </div>
+
+              {!user ? (
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-center space-y-2">
+                  <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center mx-auto">
+                    <Lock className="w-4 h-4" />
+                  </div>
+                  <p className="text-xs text-slate-600 font-medium">
+                    Sign in to save customizations and access your personal template library.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => onOpenLogin("Sign in to save and access your personal template library")}
+                    className="px-4 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold shadow-xs transition-all cursor-pointer"
+                  >
+                    Sign In
+                  </button>
+                </div>
+              ) : savedTemplates.length === 0 ? (
+                <div className="p-4 rounded-2xl bg-slate-50 border border-dashed border-slate-200 text-center">
+                  <p className="text-xs text-slate-500">
+                    No saved templates yet. Customize any template or use the wizard, then click <strong>Save</strong> in the top header!
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {savedTemplates.map((item) => (
+                    <div
+                      key={item.id}
+                      className="p-3 bg-white rounded-xl border border-slate-200 hover:border-slate-300 transition-all flex items-center justify-between gap-2 shadow-2xs"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => onSelectSavedTemplate(item)}
+                        className="flex-1 text-left min-w-0 cursor-pointer"
+                      >
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-base">{item.config.step1.emoji || "✨"}</span>
+                          <span className="text-xs font-bold text-slate-900 truncate">
+                            {item.title}
+                          </span>
+                        </div>
+                        <p className="text-[10px] text-slate-400 flex items-center gap-1 mt-0.5">
+                          <Clock className="w-3 h-3" />
+                          <span>{new Date(item.updatedAt).toLocaleDateString()}</span>
+                        </p>
+                      </button>
+
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => onSelectSavedTemplate(item)}
+                          className="px-2.5 py-1 text-[11px] font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg cursor-pointer"
+                        >
+                          Load
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onDeleteSavedTemplate(item.id)}
+                          className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
+                          title="Delete saved template"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="pt-2">

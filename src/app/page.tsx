@@ -2,15 +2,23 @@
 
 import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { AppConfig } from "@/types";
+import { AppConfig, UserProfile, SavedTemplateRecord } from "@/types";
 import { DEFAULT_CONFIG, TEMPLATES } from "@/lib/templates";
 import { parseConfigFromUrl } from "@/lib/urlState";
+import {
+  getCurrentUser,
+  logoutUser,
+  getSavedTemplates,
+  saveUserTemplate,
+  deleteUserTemplate,
+} from "@/lib/authStorage";
 import { Header } from "@/components/Header";
 import { BuilderSidebar } from "@/components/BuilderSidebar";
 import { DeviceFrame } from "@/components/DeviceFrame";
 import { FunnelContainer } from "@/components/FunnelContainer";
 import { ShareModal } from "@/components/ShareModal";
 import { CustomTemplateWizard } from "@/components/CustomTemplateWizard";
+import { LoginModal } from "@/components/LoginModal";
 import { THEMES } from "@/lib/themes";
 import { Edit3 } from "lucide-react";
 
@@ -22,6 +30,39 @@ function StudioApp() {
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [isWizardOpen, setIsWizardOpen] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+
+  // User Authentication & Browser Storage
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [loginReason, setLoginReason] = useState("");
+  const [savedTemplates, setSavedTemplates] = useState<SavedTemplateRecord[]>([]);
+  const [isSaved, setIsSaved] = useState(false);
+
+  // Load user session and saved templates on mount
+  useEffect(() => {
+    const current = getCurrentUser();
+    setUser(current);
+    setSavedTemplates(getSavedTemplates(current?.id));
+
+    const handleAuthChange = () => {
+      const u = getCurrentUser();
+      setUser(u);
+      setSavedTemplates(getSavedTemplates(u?.id));
+    };
+
+    const handleTemplatesChange = () => {
+      const u = getCurrentUser();
+      setSavedTemplates(getSavedTemplates(u?.id));
+    };
+
+    window.addEventListener("yesplan_auth_changed", handleAuthChange);
+    window.addEventListener("yesplan_templates_changed", handleTemplatesChange);
+
+    return () => {
+      window.removeEventListener("yesplan_auth_changed", handleAuthChange);
+      window.removeEventListener("yesplan_templates_changed", handleTemplatesChange);
+    };
+  }, []);
 
   // Initialize from URL parameters or hash on mount
   useEffect(() => {
@@ -92,6 +133,38 @@ function StudioApp() {
     );
   }
 
+  const handleOpenLogin = (reason?: string) => {
+    setLoginReason(reason || "");
+    setIsLoginOpen(true);
+  };
+
+  const handleLogout = () => {
+    logoutUser();
+    setUser(null);
+    setSavedTemplates(getSavedTemplates(undefined));
+  };
+
+  const handleSaveTemplate = () => {
+    if (!user) {
+      handleOpenLogin("Sign in to save this template and customizations to your browser library");
+      return;
+    }
+
+    saveUserTemplate(config, user.id);
+    setSavedTemplates(getSavedTemplates(user.id));
+    setIsSaved(true);
+    setTimeout(() => setIsSaved(false), 2500);
+  };
+
+  const handleSelectSavedTemplate = (record: SavedTemplateRecord) => {
+    setConfig({ ...record.config });
+  };
+
+  const handleDeleteSavedTemplate = (id: string) => {
+    deleteUserTemplate(id, user?.id);
+    setSavedTemplates(getSavedTemplates(user?.id));
+  };
+
   // Builder / Studio Mode: Live split-screen layout
   return (
     <div className="h-screen w-screen flex flex-col bg-slate-100 overflow-hidden">
@@ -103,7 +176,18 @@ function StudioApp() {
         onSelectTemplate={handleSelectTemplate}
         onOpenShareModal={() => setIsShareOpen(true)}
         onResetDefaults={handleResetDefaults}
-        onOpenWizard={() => setIsWizardOpen(true)}
+        onOpenWizard={() => {
+          if (!user) {
+            handleOpenLogin("Sign in to create your own custom templates");
+          } else {
+            setIsWizardOpen(true);
+          }
+        }}
+        user={user}
+        onOpenLogin={handleOpenLogin}
+        onLogout={handleLogout}
+        onSaveTemplate={handleSaveTemplate}
+        isSaved={isSaved}
       />
 
       {/* Main Split-Screen Workspace */}
@@ -112,9 +196,23 @@ function StudioApp() {
         <div className="w-full md:w-[420px] lg:w-[460px] h-1/2 md:h-full flex-shrink-0 z-10 shadow-sm border-r border-slate-200">
           <BuilderSidebar
             config={config}
-            onChange={setConfig}
+            onChange={(newConfig) => {
+              setConfig(newConfig);
+              setIsSaved(false);
+            }}
             onSelectTemplate={handleSelectTemplate}
-            onOpenWizard={() => setIsWizardOpen(true)}
+            onOpenWizard={() => {
+              if (!user) {
+                handleOpenLogin("Sign in to create your own custom templates");
+              } else {
+                setIsWizardOpen(true);
+              }
+            }}
+            user={user}
+            onOpenLogin={handleOpenLogin}
+            savedTemplates={savedTemplates}
+            onSelectSavedTemplate={handleSelectSavedTemplate}
+            onDeleteSavedTemplate={handleDeleteSavedTemplate}
           />
         </div>
 
@@ -140,7 +238,24 @@ function StudioApp() {
         onClose={() => setIsWizardOpen(false)}
         onApply={(newConfig) => {
           setConfig(newConfig);
+          if (user) {
+            saveUserTemplate(newConfig, user.id);
+            setSavedTemplates(getSavedTemplates(user.id));
+            setIsSaved(true);
+            setTimeout(() => setIsSaved(false), 2500);
+          }
         }}
+      />
+
+      {/* Browser Creator Sign In Modal */}
+      <LoginModal
+        isOpen={isLoginOpen}
+        onClose={() => setIsLoginOpen(false)}
+        onSuccess={(loggedUser) => {
+          setUser(loggedUser);
+          setSavedTemplates(getSavedTemplates(loggedUser.id));
+        }}
+        reason={loginReason}
       />
     </div>
   );
