@@ -78,6 +78,9 @@ export interface UserProfile {
 export interface SavedTemplateRecord {
   id: string;
   title: string;
+  description?: string;
+  baseTemplateId?: string;
   updatedAt: string;
   config: AppConfig;
 }
+

@@ -19,16 +19,29 @@ import { FunnelContainer } from "@/components/FunnelContainer";
 import { ShareModal } from "@/components/ShareModal";
 import { CustomTemplateWizard } from "@/components/CustomTemplateWizard";
 import { LoginModal } from "@/components/LoginModal";
+import { SaveTemplateModal } from "@/components/SaveTemplateModal";
+import { UnsavedChangesModal } from "@/components/UnsavedChangesModal";
 import { THEMES } from "@/lib/themes";
 import { Edit3 } from "lucide-react";
+
+type PendingNavigationAction =
+  | { type: "select_template"; templateKey: string }
+  | { type: "select_saved"; record: SavedTemplateRecord }
+  | { type: "reset_defaults" }
+  | { type: "open_wizard" };
 
 function StudioApp() {
   const searchParams = useSearchParams();
   const [config, setConfig] = useState<AppConfig>(DEFAULT_CONFIG);
+  const [baselineConfig, setBaselineConfig] = useState<AppConfig>(DEFAULT_CONFIG);
   const [mode, setMode] = useState<"builder" | "play">("builder");
   const [device, setDevice] = useState<"desktop" | "mobile">("mobile");
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [isWizardOpen, setIsWizardOpen] = useState(false);
+  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+  const [isUnsavedModalOpen, setIsUnsavedModalOpen] = useState(false);
+  const [pendingAction, setPendingAction] = useState<PendingNavigationAction | null>(null);
+  const [postLoginAction, setPostLoginAction] = useState<"save_and_continue" | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
   // User Authentication & Browser Storage
@@ -37,6 +50,8 @@ function StudioApp() {
   const [loginReason, setLoginReason] = useState("");
   const [savedTemplates, setSavedTemplates] = useState<SavedTemplateRecord[]>([]);
   const [isSaved, setIsSaved] = useState(false);
+
+
 
   // Load user session and saved templates on mount
   useEffect(() => {
@@ -75,6 +90,9 @@ function StudioApp() {
 
       if (loadedConfig) {
         setConfig(loadedConfig);
+        setBaselineConfig(loadedConfig);
+      } else {
+        setBaselineConfig(DEFAULT_CONFIG);
       }
 
       if (
@@ -90,15 +108,115 @@ function StudioApp() {
     }
   }, [searchParams]);
 
-  const handleSelectTemplate = (templateKey: string) => {
-    if (TEMPLATES[templateKey]) {
-      setConfig({ ...TEMPLATES[templateKey] });
+  // Check if current configuration has unsaved changes vs baseline
+  const checkIsDirty = (): boolean => {
+    return JSON.stringify(config) !== JSON.stringify(baselineConfig);
+  };
+
+  // Warn on tab closing if unsaved changes exist
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (checkIsDirty()) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [config, baselineConfig]);
+
+  const executePendingAction = (action: PendingNavigationAction | null) => {
+    if (!action) return;
+    if (action.type === "select_template") {
+      if (TEMPLATES[action.templateKey]) {
+        const next = { ...TEMPLATES[action.templateKey] };
+        setConfig(next);
+        setBaselineConfig(next);
+      }
+    } else if (action.type === "select_saved") {
+      const next = { ...action.record.config };
+      setConfig(next);
+      setBaselineConfig(next);
+    } else if (action.type === "reset_defaults") {
+      const currentId = config.id in TEMPLATES ? config.id : "romantic-date";
+      const next = { ...TEMPLATES[currentId] };
+      setConfig(next);
+      setBaselineConfig(next);
+    } else if (action.type === "open_wizard") {
+      if (!user) {
+        handleOpenLogin("Sign in to create your own custom templates");
+      } else {
+        setIsWizardOpen(true);
+      }
     }
   };
 
+  const getTargetTemplateTitle = (action: PendingNavigationAction | null): string => {
+    if (!action) return "";
+    if (action.type === "select_template") {
+      return TEMPLATES[action.templateKey]?.title || "Preset Template";
+    }
+    if (action.type === "select_saved") {
+      return action.record.title || "Saved Template";
+    }
+    if (action.type === "reset_defaults") {
+      return "Template Defaults";
+    }
+    if (action.type === "open_wizard") {
+      return "Guided Custom Wizard";
+    }
+    return "";
+  };
+
+  const handleSelectTemplate = (templateKey: string) => {
+    if (templateKey === config.id && !checkIsDirty()) return;
+    if (checkIsDirty()) {
+      setPendingAction({ type: "select_template", templateKey });
+      setIsUnsavedModalOpen(true);
+      return;
+    }
+    if (TEMPLATES[templateKey]) {
+      const next = { ...TEMPLATES[templateKey] };
+      setConfig(next);
+      setBaselineConfig(next);
+    }
+  };
+
+  const handleSelectSavedTemplate = (record: SavedTemplateRecord) => {
+    if (record.id === config.id && !checkIsDirty()) return;
+    if (checkIsDirty()) {
+      setPendingAction({ type: "select_saved", record });
+      setIsUnsavedModalOpen(true);
+      return;
+    }
+    const next = { ...record.config };
+    setConfig(next);
+    setBaselineConfig(next);
+  };
+
   const handleResetDefaults = () => {
+    if (checkIsDirty()) {
+      setPendingAction({ type: "reset_defaults" });
+      setIsUnsavedModalOpen(true);
+      return;
+    }
     const currentId = config.id in TEMPLATES ? config.id : "romantic-date";
-    setConfig({ ...TEMPLATES[currentId] });
+    const next = { ...TEMPLATES[currentId] };
+    setConfig(next);
+    setBaselineConfig(next);
+  };
+
+  const handleOpenWizard = () => {
+    if (checkIsDirty()) {
+      setPendingAction({ type: "open_wizard" });
+      setIsUnsavedModalOpen(true);
+      return;
+    }
+    if (!user) {
+      handleOpenLogin("Sign in to create your own custom templates");
+    } else {
+      setIsWizardOpen(true);
+    }
   };
 
   if (!isInitialized) {
@@ -146,24 +264,63 @@ function StudioApp() {
 
   const handleSaveTemplate = () => {
     if (!user) {
-      handleOpenLogin("Sign in to save this template and customizations to your browser library");
+      handleOpenLogin("Sign in to save this template and customizations under your profile");
       return;
     }
-
-    saveUserTemplate(config, user.id);
-    setSavedTemplates(getSavedTemplates(user.id));
-    setIsSaved(true);
-    setTimeout(() => setIsSaved(false), 2500);
+    setIsSaveModalOpen(true);
   };
 
-  const handleSelectSavedTemplate = (record: SavedTemplateRecord) => {
-    setConfig({ ...record.config });
+  const handleSaveConfirm = (title: string, description: string, asNew: boolean) => {
+    if (!user) return;
+    const record = saveUserTemplate(config, user.id, {
+      title,
+      description,
+      saveAsNew: asNew,
+    });
+    setSavedTemplates(getSavedTemplates(user.id));
+    setIsSaveModalOpen(false);
+    setIsSaved(true);
+    setTimeout(() => setIsSaved(false), 2500);
+
+    if (pendingAction) {
+      const nextAction = pendingAction;
+      setPendingAction(null);
+      executePendingAction(nextAction);
+    } else {
+      setConfig({ ...record.config });
+      setBaselineConfig({ ...record.config });
+    }
+  };
+
+  const handleUnsavedSaveAndContinue = () => {
+    setIsUnsavedModalOpen(false);
+    if (!user) {
+      setPostLoginAction("save_and_continue");
+      handleOpenLogin("Sign in to give your customized template a name and save it to your profile");
+    } else {
+      setIsSaveModalOpen(true);
+    }
+  };
+
+  const handleUnsavedDiscardAndContinue = () => {
+    setIsUnsavedModalOpen(false);
+    if (pendingAction) {
+      const nextAction = pendingAction;
+      setPendingAction(null);
+      executePendingAction(nextAction);
+    }
+  };
+
+  const handleUnsavedClose = () => {
+    setIsUnsavedModalOpen(false);
+    setPendingAction(null);
   };
 
   const handleDeleteSavedTemplate = (id: string) => {
     deleteUserTemplate(id, user?.id);
     setSavedTemplates(getSavedTemplates(user?.id));
   };
+
 
   // Builder / Studio Mode: Live split-screen layout
   return (
@@ -176,18 +333,14 @@ function StudioApp() {
         onSelectTemplate={handleSelectTemplate}
         onOpenShareModal={() => setIsShareOpen(true)}
         onResetDefaults={handleResetDefaults}
-        onOpenWizard={() => {
-          if (!user) {
-            handleOpenLogin("Sign in to create your own custom templates");
-          } else {
-            setIsWizardOpen(true);
-          }
-        }}
+        onOpenWizard={handleOpenWizard}
         user={user}
         onOpenLogin={handleOpenLogin}
         onLogout={handleLogout}
         onSaveTemplate={handleSaveTemplate}
         isSaved={isSaved}
+        savedTemplates={savedTemplates}
+        onSelectSavedTemplate={handleSelectSavedTemplate}
       />
 
       {/* Main Split-Screen Workspace */}
@@ -201,18 +354,13 @@ function StudioApp() {
               setIsSaved(false);
             }}
             onSelectTemplate={handleSelectTemplate}
-            onOpenWizard={() => {
-              if (!user) {
-                handleOpenLogin("Sign in to create your own custom templates");
-              } else {
-                setIsWizardOpen(true);
-              }
-            }}
+            onOpenWizard={handleOpenWizard}
             user={user}
             onOpenLogin={handleOpenLogin}
             savedTemplates={savedTemplates}
             onSelectSavedTemplate={handleSelectSavedTemplate}
             onDeleteSavedTemplate={handleDeleteSavedTemplate}
+            onOpenSaveModal={handleSaveTemplate}
           />
         </div>
 
@@ -239,24 +387,63 @@ function StudioApp() {
         onApply={(newConfig) => {
           setConfig(newConfig);
           if (user) {
-            saveUserTemplate(newConfig, user.id);
+            const record = saveUserTemplate(newConfig, user.id, {
+              title: newConfig.title,
+              saveAsNew: true,
+            });
+            setConfig({ ...record.config });
+            setBaselineConfig({ ...record.config });
             setSavedTemplates(getSavedTemplates(user.id));
             setIsSaved(true);
             setTimeout(() => setIsSaved(false), 2500);
+          } else {
+            setBaselineConfig(DEFAULT_CONFIG);
           }
         }}
+      />
+
+      {/* Save Template with Custom Name Modal */}
+      <SaveTemplateModal
+        isOpen={isSaveModalOpen}
+        onClose={() => {
+          setIsSaveModalOpen(false);
+          setPendingAction(null);
+        }}
+        config={config}
+        user={user}
+        onSave={handleSaveConfirm}
+      />
+
+      {/* Unsaved Changes Confirmation Modal */}
+      <UnsavedChangesModal
+        isOpen={isUnsavedModalOpen}
+        onClose={handleUnsavedClose}
+        currentTemplateTitle={config.title || config.step1.title || "Custom Template"}
+        targetTemplateTitle={getTargetTemplateTitle(pendingAction)}
+        isLoggedIn={Boolean(user)}
+        onSaveAndContinue={handleUnsavedSaveAndContinue}
+        onDiscardAndContinue={handleUnsavedDiscardAndContinue}
       />
 
       {/* Browser Creator Sign In Modal */}
       <LoginModal
         isOpen={isLoginOpen}
-        onClose={() => setIsLoginOpen(false)}
+        onClose={() => {
+          setIsLoginOpen(false);
+          setPostLoginAction(null);
+          setPendingAction(null);
+        }}
         onSuccess={(loggedUser) => {
           setUser(loggedUser);
           setSavedTemplates(getSavedTemplates(loggedUser.id));
+          if (postLoginAction === "save_and_continue") {
+            setPostLoginAction(null);
+            setIsSaveModalOpen(true);
+          }
         }}
         reason={loginReason}
       />
+
     </div>
   );
 }

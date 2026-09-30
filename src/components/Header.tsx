@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { AppConfig, UserProfile } from "@/types";
+import { AppConfig, UserProfile, SavedTemplateRecord } from "@/types";
 import { TEMPLATES } from "@/lib/templates";
 import { generateShareUrl } from "@/lib/urlState";
 import {
@@ -17,6 +17,7 @@ import {
   Bookmark,
   LogIn,
   LogOut,
+  FolderHeart,
 } from "lucide-react";
 
 interface HeaderProps {
@@ -32,6 +33,8 @@ interface HeaderProps {
   onLogout: () => void;
   onSaveTemplate: () => void;
   isSaved?: boolean;
+  savedTemplates?: SavedTemplateRecord[];
+  onSelectSavedTemplate?: (template: SavedTemplateRecord) => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -47,6 +50,8 @@ export const Header: React.FC<HeaderProps> = ({
   onLogout,
   onSaveTemplate,
   isSaved,
+  savedTemplates = [],
+  onSelectSavedTemplate,
 }) => {
   const [copied, setCopied] = useState(false);
 
@@ -56,8 +61,6 @@ export const Header: React.FC<HeaderProps> = ({
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
-
-  const currentTemplate = TEMPLATES[config.id] || TEMPLATES["romantic-date"];
 
   return (
     <header className="h-16 w-full bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-4 sm:px-6 flex items-center justify-between z-30 sticky top-0 select-none">
@@ -87,19 +90,48 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="flex items-center gap-1.5 pl-3 border-l border-slate-200 text-xs">
             <span className="text-slate-400 font-medium">Template:</span>
             <select
-              value={config.id in TEMPLATES ? config.id : "romantic-date"}
-              onChange={(e) => onSelectTemplate(e.target.value)}
-              className="font-bold text-slate-800 bg-slate-100 hover:bg-slate-200/80 border border-slate-200 rounded-xl px-2.5 py-1 outline-none cursor-pointer text-xs"
+              value={config.id}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val in TEMPLATES) {
+                  onSelectTemplate(val);
+                } else {
+                  const match = savedTemplates.find((st) => st.id === val);
+                  if (match && onSelectSavedTemplate) {
+                    onSelectSavedTemplate(match);
+                  }
+                }
+              }}
+              className="font-bold text-slate-800 bg-slate-100 hover:bg-slate-200/80 border border-slate-200 rounded-xl px-2.5 py-1 outline-none cursor-pointer text-xs max-w-[210px] truncate"
             >
-              {Object.entries(TEMPLATES).map(([key, t]) => (
-                <option key={key} value={key}>
-                  {t.step1.emoji} {t.title}
-                </option>
-              ))}
+              <optgroup label="Standard Templates (Originals)">
+                {Object.entries(TEMPLATES).map(([key, t]) => (
+                  <option key={key} value={key}>
+                    {t.step1.emoji} {t.title}
+                  </option>
+                ))}
+              </optgroup>
+              {savedTemplates.length > 0 && (
+                <optgroup label="My Profile Templates">
+                  {savedTemplates.map((st) => (
+                    <option key={st.id} value={st.id}>
+                      {st.config.step1.emoji || "✨"} {st.title}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
+              {!(config.id in TEMPLATES) && !savedTemplates.some((st) => st.id === config.id) && (
+                <optgroup label="Current Custom Work">
+                  <option value={config.id}>
+                    ✨ {config.title || "Customized Template (Unsaved)"}
+                  </option>
+                </optgroup>
+              )}
             </select>
           </div>
         </div>
       </div>
+
 
       {/* Center: Mode Switcher */}
       <div className="flex items-center bg-slate-100 p-1 rounded-full border border-slate-200/80">
@@ -173,23 +205,25 @@ export const Header: React.FC<HeaderProps> = ({
           onClick={onSaveTemplate}
           className={`py-1.5 px-3 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer ${
             isSaved
-              ? "bg-emerald-50 text-emerald-700 border-emerald-300"
-              : "border-slate-200 hover:bg-slate-50 text-slate-700"
+              ? "bg-emerald-50 text-emerald-700 border-emerald-300 ring-2 ring-emerald-200"
+              : "border-slate-200 hover:border-rose-200 hover:bg-rose-50/40 text-slate-800"
           }`}
-          title="Save customization to your browser library"
+          title="Save customized template with a name under your profile"
         >
           {isSaved ? (
             <>
               <Check className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Saved</span>
+              <span className="text-emerald-700">Saved!</span>
             </>
           ) : (
             <>
-              <Bookmark className="w-3.5 h-3.5 text-slate-500" />
-              <span className="hidden sm:inline">Save</span>
+              <Bookmark className="w-3.5 h-3.5 text-rose-500 fill-rose-500/20" />
+              <span className="hidden sm:inline">Save Template</span>
+              <span className="sm:hidden">Save</span>
             </>
           )}
         </button>
+
 
         {/* Share Modal Button */}
         <button

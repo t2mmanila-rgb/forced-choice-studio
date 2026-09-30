@@ -73,15 +73,64 @@ export function getSavedTemplates(userId?: string): SavedTemplateRecord[] {
   }
 }
 
+import { TEMPLATES } from "@/lib/templates";
+
 /**
- * Saves or updates a template in browser localStorage
+ * Checks if a template ID is one of the built-in standard templates
  */
-export function saveUserTemplate(config: AppConfig, userId?: string): SavedTemplateRecord {
+export function isStandardTemplate(templateId?: string): boolean {
+  if (!templateId) return false;
+  return templateId in TEMPLATES;
+}
+
+export interface SaveTemplateOptions {
+  title?: string;
+  description?: string;
+  saveAsNew?: boolean;
+}
+
+/**
+ * Saves or updates a template in browser localStorage.
+ * If config is based on a standard template, it always creates a new user template
+ * under their profile without modifying the original standard template.
+ */
+export function saveUserTemplate(
+  config: AppConfig,
+  userId?: string,
+  options?: SaveTemplateOptions
+): SavedTemplateRecord {
+  const isStandard = isStandardTemplate(config.id);
+  const shouldCreateNew =
+    options?.saveAsNew || isStandard || !config.id || !config.id.startsWith("user_tmpl_");
+
+  const recordId = shouldCreateNew
+    ? `user_tmpl_${Date.now()}_${Math.floor(Math.random() * 1000)}`
+    : config.id;
+
+  // Preserve the original standard template as baseTemplateId for compact URL serialization
+  const baseTemplateId =
+    config.baseTemplateId || (isStandard ? config.id : undefined);
+
+  const finalTitle =
+    options?.title?.trim() ||
+    config.title?.trim() ||
+    config.step1?.title?.trim() ||
+    "Custom Template";
+
+  const updatedConfig: AppConfig = {
+    ...config,
+    id: recordId,
+    baseTemplateId,
+    title: finalTitle,
+  };
+
   const record: SavedTemplateRecord = {
-    id: config.id || `custom-${Date.now()}`,
-    title: config.title || config.step1.title || "Custom Template",
+    id: recordId,
+    title: finalTitle,
+    description: options?.description?.trim() || undefined,
+    baseTemplateId,
     updatedAt: new Date().toISOString(),
-    config: { ...config },
+    config: updatedConfig,
   };
 
   if (typeof window !== "undefined") {
@@ -107,6 +156,7 @@ export function saveUserTemplate(config: AppConfig, userId?: string): SavedTempl
 
   return record;
 }
+
 
 /**
  * Deletes a template from the user's browser library

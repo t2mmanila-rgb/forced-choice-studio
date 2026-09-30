@@ -44,10 +44,12 @@ export const CustomTemplateWizard: React.FC<CustomTemplateWizardProps> = ({
 
   // Topic input & active suggestions archetype
   const [topicInput, setTopicInput] = useState<string>("Choose your favourite parent?");
+  const [templateTitle, setTemplateTitle] = useState<string>("Choose your favourite parent?");
   const [selectedTheme, setSelectedTheme] = useState<ThemeId>("electric-fun");
   const [activeArchetype, setActiveArchetype] = useState<ArchetypeTopic>(
     ARCHETYPES["favourite-parent"]
   );
+
 
   // Editable fields across the 5 funnel steps
   // Step 1: Hook
@@ -126,6 +128,7 @@ export const CustomTemplateWizard: React.FC<CustomTemplateWizardProps> = ({
   // Update suggestions on topic input change
   const handleTopicChange = (newTopic: string) => {
     setTopicInput(newTopic);
+    setTemplateTitle(newTopic);
     const suggested = getSmartSuggestionsForTopic(newTopic);
     applyArchetypeSuggestions(suggested);
   };
@@ -135,6 +138,7 @@ export const CustomTemplateWizard: React.FC<CustomTemplateWizardProps> = ({
     const arch = ARCHETYPES[key];
     if (arch) {
       setTopicInput(arch.name);
+      setTemplateTitle(arch.name);
       applyArchetypeSuggestions(arch);
     }
   };
@@ -155,12 +159,15 @@ export const CustomTemplateWizard: React.FC<CustomTemplateWizardProps> = ({
         ? "favourite-parent"
         : undefined;
 
+    const uniqueId = `user_tmpl_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+
     const customConfig: AppConfig = {
-      id: baseId ? baseId : `custom-${Date.now()}`,
+      id: uniqueId,
       baseTemplateId: baseId,
-      title: topicInput.trim() || "Custom Forced Choice",
+      title: templateTitle.trim() || topicInput.trim() || "Custom Forced Choice",
       theme: selectedTheme,
       step1: {
+
         title: headline.trim() || "What is your choice?",
         subtitle: subheading.trim() || "Think carefully...",
         emoji: emoji || "✨",
@@ -803,10 +810,27 @@ export const CustomTemplateWizard: React.FC<CustomTemplateWizardProps> = ({
           {/* ================= STEP 5: OFFICIAL CERTIFICATE ================= */}
           {wizardStep === 5 && (
             <div className="space-y-4">
+              <div className="p-3.5 bg-gradient-to-r from-amber-50 to-rose-50 border border-rose-200 rounded-2xl">
+                <label className="block text-xs font-black text-slate-800 uppercase tracking-wider mb-1">
+                  Template Name / Title (Saved in Profile)
+                </label>
+                <input
+                  type="text"
+                  value={templateTitle}
+                  onChange={(e) => setTemplateTitle(e.target.value)}
+                  placeholder="e.g. Choose your favourite parent?"
+                  className="w-full px-3.5 py-2.5 text-sm font-bold border-2 border-rose-200 rounded-xl outline-none focus:border-rose-500 bg-white text-slate-900"
+                />
+                <p className="text-[11px] text-slate-500 mt-1">
+                  This custom title will appear under your saved templates and in shareable links.
+                </p>
+              </div>
+
               <div>
                 <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1">
                   Official Certificate / Pass Title
                 </label>
+
                 <input
                   type="text"
                   value={step5Title}
