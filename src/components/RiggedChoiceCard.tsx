@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChoiceCard } from "@/types";
 import { Sparkles, Check, AlertCircle } from "lucide-react";
@@ -31,11 +31,21 @@ export const RiggedChoiceCard: React.FC<RiggedChoiceCardProps> = ({
   themeClasses,
   onSelect,
 }) => {
+  const cardContainerRef = useRef<HTMLDivElement>(null);
   const [isShaking, setIsShaking] = useState(false);
   const [tooltipText, setTooltipText] = useState<string | null>(null);
+  const [alignSide, setAlignSide] = useState<"left" | "right">("right");
 
   const handleClick = () => {
     if (isRiggedMode && !isTarget) {
+      // Determine which half of the screen the card is located in
+      if (cardContainerRef.current) {
+        const rect = cardContainerRef.current.getBoundingClientRect();
+        const cardCenter = rect.left + rect.width / 2;
+        const screenCenter = window.innerWidth / 2;
+        setAlignSide(cardCenter > screenCenter ? "right" : "left");
+      }
+
       setIsShaking(true);
       const randomPhrase =
         rejectionPhrases.length > 0
@@ -44,7 +54,7 @@ export const RiggedChoiceCard: React.FC<RiggedChoiceCardProps> = ({
       setTooltipText(randomPhrase);
 
       setTimeout(() => setIsShaking(false), 500);
-      setTimeout(() => setTooltipText(null), 2200);
+      setTimeout(() => setTooltipText(null), 2800);
       return;
     }
 
@@ -52,20 +62,49 @@ export const RiggedChoiceCard: React.FC<RiggedChoiceCardProps> = ({
   };
 
   return (
-    <div className="relative group select-none">
-      {/* Floating humorous rejection tooltip */}
+    <div ref={cardContainerRef} className="relative group select-none">
+      {/* Floating humorous rejection tooltip that slides smoothly onto the screen from whichever side */}
       <AnimatePresence>
         {tooltipText && (
           <motion.div
-            initial={{ opacity: 0, y: 10, scale: 0.8 }}
-            animate={{ opacity: 1, y: -44, scale: 1 }}
-            exit={{ opacity: 0, y: -20, scale: 0.8 }}
-            transition={{ type: "spring", stiffness: 500, damping: 25 }}
-            className="absolute left-1/2 -translate-x-1/2 top-0 z-30 pointer-events-none whitespace-nowrap bg-rose-600 text-white font-black text-xs sm:text-sm px-4 py-1.5 rounded-full shadow-2xl flex items-center gap-1.5 ring-2 ring-white/50"
+            initial={{
+              opacity: 0,
+              x: alignSide === "right" ? 55 : -55,
+              y: -44,
+              scale: 0.92,
+            }}
+            animate={{
+              opacity: 1,
+              x: 0,
+              y: -44,
+              scale: 1,
+            }}
+            exit={{
+              opacity: 0,
+              x: alignSide === "right" ? 35 : -35,
+              y: -30,
+              scale: 0.92,
+            }}
+            transition={{
+              type: "spring",
+              stiffness: 170,
+              damping: 20,
+              mass: 0.8,
+            }}
+            className={`absolute top-0 z-40 pointer-events-none bg-rose-600 text-white font-black text-xs sm:text-sm px-4 py-2 rounded-2xl shadow-2xl flex items-center gap-2 ring-2 ring-white/60 max-w-[270px] sm:max-w-xs ${
+              alignSide === "right"
+                ? "right-0 origin-right"
+                : "left-0 origin-left"
+            }`}
           >
-            <AlertCircle className="w-4 h-4" />
-            <span>{tooltipText}</span>
-            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-rose-600 rotate-45" />
+            <AlertCircle className="w-4 h-4 flex-shrink-0 text-amber-300" />
+            <span className="leading-tight break-words">{tooltipText}</span>
+            {/* Pointer notch indicator pointing directly above the card */}
+            <div
+              className={`absolute -bottom-1.5 w-3 h-3 bg-rose-600 rotate-45 ${
+                alignSide === "right" ? "right-8" : "left-8"
+              }`}
+            />
           </motion.div>
         )}
       </AnimatePresence>
