@@ -60,6 +60,13 @@ export const FunnelContainer: React.FC<FunnelContainerProps> = ({
         {[1, 2, 3, 4, 5].map((step) => {
           const isPassed = step < currentStep;
           const isCurrent = step === currentStep;
+          const currentPillClass =
+            config.theme === "pastel-romance"
+              ? "bg-rose-500 shadow-xs"
+              : config.theme === "electric-fun"
+              ? "bg-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.8)]"
+              : "bg-emerald-400 shadow-xs";
+
           return (
             <button
               key={step}
@@ -68,10 +75,10 @@ export const FunnelContainer: React.FC<FunnelContainerProps> = ({
               onClick={() => isBuilderPreview && setCurrentStep(step)}
               className={`h-2 flex-1 rounded-full transition-all duration-300 ${
                 isCurrent
-                  ? "bg-slate-900 shadow-xs"
+                  ? currentPillClass
                   : isPassed
-                  ? "bg-slate-400"
-                  : "bg-slate-200/80"
+                  ? "bg-slate-400/80"
+                  : "bg-slate-300/40"
               } ${isBuilderPreview ? "cursor-pointer hover:opacity-80" : "cursor-default"}`}
               title={`Step ${step}`}
             />
@@ -80,7 +87,7 @@ export const FunnelContainer: React.FC<FunnelContainerProps> = ({
       </div>
 
       {isBuilderPreview && (
-        <div className="mb-2 text-[11px] font-medium text-slate-500 bg-white/70 px-3 py-1 rounded-full border border-slate-200">
+        <div className={`mb-2 text-[11px] font-semibold px-3 py-1 rounded-full border shadow-xs ${theme.chipBg}`}>
           Builder Preview • Step {currentStep} of 5 (click bars above to jump)
         </div>
       )}

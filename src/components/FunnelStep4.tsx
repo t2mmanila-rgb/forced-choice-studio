@@ -26,21 +26,21 @@ export const FunnelStep4: React.FC<FunnelStep4Props> = ({
   const isRigged = config.mode === "rigged";
 
   return (
-    <div className="flex flex-col items-center justify-between px-4 py-6 sm:py-8 min-h-[480px] w-full max-w-xl mx-auto select-none">
-      <div className="w-full text-center mb-6">
-        <div className={`inline-flex items-center justify-center w-12 h-12 rounded-2xl shadow-md mb-3 text-2xl ${theme.iconBg}`}>
+    <div className="flex flex-col items-center justify-between px-4 py-4 sm:py-6 min-h-[440px] w-full max-w-xl mx-auto select-none">
+      <div className="w-full text-center mb-5">
+        <div className={`inline-flex items-center justify-center w-12 h-12 rounded-2xl shadow-md mb-2.5 text-2xl ${theme.iconBg}`}>
           <Compass className="w-6 h-6" />
         </div>
-        <h2 className={`text-2xl sm:text-3xl font-extrabold tracking-tight mb-2 ${theme.headingText}`}>
+        <h2 className={`text-2xl sm:text-3xl font-extrabold tracking-tight mb-1.5 ${theme.headingText}`}>
           {config.title}
         </h2>
-        <p className={`text-sm max-w-md mx-auto ${theme.mutedText}`}>
+        <p className={`text-xs sm:text-sm max-w-md mx-auto ${theme.mutedText}`}>
           {config.subtitle}
         </p>
       </div>
 
       {/* Grid of activities */}
-      <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-8">
+      <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
         {config.options.map((opt) => (
           <RiggedChoiceCard
             key={opt.id}
@@ -52,7 +52,10 @@ export const FunnelStep4: React.FC<FunnelStep4Props> = ({
             themeClasses={{
               activeBorder: theme.activeCardBorder,
               inactiveCardBg: theme.inactiveCardBg,
-              mutedText: theme.mutedText,
+              activeTitleText: theme.activeTitleText,
+              activeDescText: theme.activeDescText,
+              inactiveTitleText: theme.inactiveTitleText,
+              inactiveDescText: theme.inactiveDescText,
             }}
             onSelect={onSelect}
           />

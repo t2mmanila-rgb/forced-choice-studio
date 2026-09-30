@@ -23,18 +23,19 @@ export const FunnelStep1: React.FC<FunnelStep1Props> = ({ config, themeId, onYes
 
   const theme = THEMES[themeId] || THEMES["pastel-romance"];
 
-  // Yes button scale growth calculation
-  const yesScale = config.yesGrowthFactor
+  // Yes button scale growth calculation - safely capped so it never breaks layout
+  const rawScale = config.yesGrowthFactor
     ? config.evasionBehavior === "shrink"
-      ? 1 + (1 - shrinkScale) * 1.5
-      : 1 + Math.min(evasionCount * 0.1, 1.2)
+      ? 1 + (1 - shrinkScale) * 0.4
+      : 1 + Math.min(evasionCount * 0.08, 0.35)
     : 1;
+  const yesScale = Math.min(rawScale, 1.35);
 
   const handleEvade = () => {
     setEvasionCount((prev) => prev + 1);
 
     if (config.evasionBehavior === "shrink") {
-      setShrinkScale((prev) => Math.max(0.05, prev - 0.25));
+      setShrinkScale((prev) => Math.max(0.1, prev - 0.22));
     } else if (config.evasionBehavior === "bamboozle") {
       setIsBamboozled((prev) => !prev);
     }
@@ -57,13 +58,13 @@ export const FunnelStep1: React.FC<FunnelStep1Props> = ({ config, themeId, onYes
   return (
     <div
       ref={containerRef}
-      className="relative flex flex-col items-center justify-center text-center px-4 py-8 sm:py-12 min-h-[460px] w-full max-w-lg mx-auto overflow-hidden select-none"
+      className="relative flex flex-col items-center justify-center text-center px-4 py-4 sm:py-8 w-full max-w-lg mx-auto select-none"
     >
       {/* Animated Emoji Badge */}
       <motion.div
-        animate={{ scale: [1, 1.15, 1], rotate: [0, 5, -5, 0] }}
+        animate={{ scale: [1, 1.12, 1], rotate: [0, 4, -4, 0] }}
         transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
-        className={`w-20 h-20 sm:w-24 sm:h-24 rounded-3xl flex items-center justify-center text-4xl sm:text-5xl mb-6 shadow-xl ${theme.iconBg}`}
+        className={`w-16 h-16 sm:w-20 sm:h-20 rounded-3xl flex items-center justify-center text-3xl sm:text-4xl mb-4 shadow-xl ${theme.iconBg}`}
       >
         {config.emoji || "💖"}
       </motion.div>
@@ -72,7 +73,7 @@ export const FunnelStep1: React.FC<FunnelStep1Props> = ({ config, themeId, onYes
       <motion.h1
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
-        className={`text-2xl sm:text-4xl font-extrabold tracking-tight mb-3 leading-tight ${theme.headingText}`}
+        className={`text-xl sm:text-3xl font-extrabold tracking-tight mb-2 leading-tight ${theme.headingText}`}
       >
         {config.title}
       </motion.h1>
@@ -81,14 +82,14 @@ export const FunnelStep1: React.FC<FunnelStep1Props> = ({ config, themeId, onYes
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className={`text-sm sm:text-base mb-8 max-w-sm ${theme.mutedText}`}
+        className={`text-xs sm:text-sm mb-6 max-w-sm ${theme.mutedText}`}
       >
         {config.subtitle}
       </motion.p>
 
-      {/* Dual Button Arena */}
-      <div className="relative w-full max-w-md h-28 flex items-center justify-center gap-4">
-        {/* Positive "Yes" Button */}
+      {/* Dual Button Arena - always accessible and centered */}
+      <div className="relative w-full max-w-md min-h-[110px] flex items-center justify-center gap-3 sm:gap-4 my-2 px-2">
+        {/* Positive "Yes" Button (The one we WANT them to choose) */}
         <motion.button
           type="button"
           onClick={handleYesClick}
@@ -96,14 +97,16 @@ export const FunnelStep1: React.FC<FunnelStep1Props> = ({ config, themeId, onYes
           whileHover={{ scale: yesScale * 1.05 }}
           whileTap={{ scale: yesScale * 0.95 }}
           transition={{ type: "spring", stiffness: 400, damping: 20 }}
-          className={`z-20 font-bold px-7 py-3.5 rounded-full transition-all flex items-center gap-2 cursor-pointer ${theme.primaryButton}`}
+          className={`z-20 font-black px-6 sm:px-8 py-3.5 sm:py-4 rounded-full transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xl flex-shrink-0 ${theme.primaryButton}`}
         >
-          <Heart className="w-5 h-5 fill-current" />
-          <span>{isBamboozled ? config.noText : config.yesText}</span>
+          <Heart className="w-5 h-5 fill-current flex-shrink-0" />
+          <span className="whitespace-nowrap text-sm sm:text-base">
+            {isBamboozled ? config.noText : config.yesText}
+          </span>
         </motion.button>
 
         {/* Evasive "No" Button */}
-        <div className="z-10">
+        <div className="z-10 flex-shrink-0">
           <EvasiveButton
             text={config.noText}
             behavior={config.evasionBehavior}
@@ -122,7 +125,7 @@ export const FunnelStep1: React.FC<FunnelStep1Props> = ({ config, themeId, onYes
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mt-6 z-20"
+          className="mt-4 z-20"
         >
           <button
             type="button"
@@ -137,7 +140,7 @@ export const FunnelStep1: React.FC<FunnelStep1Props> = ({ config, themeId, onYes
       {/* Server Refusal Modal */}
       <AnimatePresence>
         {showEscapeModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -163,7 +166,7 @@ export const FunnelStep1: React.FC<FunnelStep1Props> = ({ config, themeId, onYes
                   setShowEscapeModal(false);
                   handleYesClick();
                 }}
-                className={`w-full py-3 rounded-full font-bold text-sm ${theme.primaryButton}`}
+                className={`w-full py-3.5 rounded-full font-bold text-sm ${theme.primaryButton}`}
               >
                 Fine, I choose YES! 🥰
               </button>

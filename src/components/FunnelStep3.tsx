@@ -24,21 +24,21 @@ export const FunnelStep3: React.FC<FunnelStep3Props> = ({
   const theme = THEMES[themeId] || THEMES["pastel-romance"];
 
   return (
-    <div className="flex flex-col items-center justify-between px-4 py-6 sm:py-10 min-h-[460px] w-full max-w-lg mx-auto select-none">
-      <div className="w-full text-center mb-6">
-        <div className={`inline-flex items-center justify-center w-12 h-12 rounded-2xl shadow-md mb-3 text-2xl ${theme.iconBg}`}>
+    <div className="flex flex-col items-center justify-between px-4 py-4 sm:py-6 min-h-[440px] w-full max-w-lg mx-auto select-none">
+      <div className="w-full text-center mb-5">
+        <div className={`inline-flex items-center justify-center w-12 h-12 rounded-2xl shadow-md mb-2.5 text-2xl ${theme.iconBg}`}>
           <Calendar className="w-6 h-6" />
         </div>
-        <h2 className={`text-2xl sm:text-3xl font-extrabold tracking-tight mb-2 ${theme.headingText}`}>
+        <h2 className={`text-2xl sm:text-3xl font-extrabold tracking-tight mb-1.5 ${theme.headingText}`}>
           {config.title}
         </h2>
-        <p className={`text-sm max-w-sm mx-auto ${theme.mutedText}`}>
+        <p className={`text-xs sm:text-sm max-w-sm mx-auto ${theme.mutedText}`}>
           {config.subtitle}
         </p>
       </div>
 
       {/* Cards list */}
-      <div className="w-full space-y-3 mb-8">
+      <div className="w-full space-y-3 mb-6">
         {config.options.map((opt) => {
           const isSelected = selectedId === opt.id;
           return (
@@ -61,11 +61,23 @@ export const FunnelStep3: React.FC<FunnelStep3Props> = ({
                   </span>
                 )}
                 <div>
-                  <h4 className="font-bold text-sm sm:text-base">
+                  <h4
+                    className={`text-sm sm:text-base leading-snug transition-colors ${
+                      isSelected
+                        ? theme.activeTitleText
+                        : theme.inactiveTitleText
+                    }`}
+                  >
                     {opt.title}
                   </h4>
                   {opt.description && (
-                    <p className={`text-xs mt-0.5 opacity-80 ${theme.mutedText}`}>
+                    <p
+                      className={`text-xs mt-0.5 transition-colors ${
+                        isSelected
+                          ? theme.activeDescText
+                          : theme.inactiveDescText
+                      }`}
+                    >
                       {opt.description}
                     </p>
                   )}

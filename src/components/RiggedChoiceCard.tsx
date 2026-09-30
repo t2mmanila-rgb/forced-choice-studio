@@ -14,7 +14,10 @@ interface RiggedChoiceCardProps {
   themeClasses: {
     activeBorder: string;
     inactiveCardBg: string;
-    mutedText?: string;
+    activeTitleText: string;
+    activeDescText: string;
+    inactiveTitleText: string;
+    inactiveDescText: string;
   };
   onSelect: (cardId: string) => void;
 }
@@ -97,7 +100,13 @@ export const RiggedChoiceCard: React.FC<RiggedChoiceCardProps> = ({
                 {card.emoji}
               </span>
             )}
-            <h4 className="font-bold text-sm sm:text-base leading-snug">
+            <h4
+              className={`text-sm sm:text-base leading-snug transition-colors ${
+                isSelected
+                  ? themeClasses.activeTitleText
+                  : themeClasses.inactiveTitleText
+              }`}
+            >
               {card.title}
             </h4>
           </div>
@@ -116,7 +125,13 @@ export const RiggedChoiceCard: React.FC<RiggedChoiceCardProps> = ({
         </div>
 
         {card.description && (
-          <p className="text-xs sm:text-sm opacity-80 line-clamp-2 mt-0.5">
+          <p
+            className={`text-xs sm:text-sm line-clamp-2 mt-0.5 transition-colors ${
+              isSelected
+                ? themeClasses.activeDescText
+                : themeClasses.inactiveDescText
+            }`}
+          >
             {card.description}
           </p>
         )}

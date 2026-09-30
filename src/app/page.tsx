@@ -10,6 +10,7 @@ import { BuilderSidebar } from "@/components/BuilderSidebar";
 import { DeviceFrame } from "@/components/DeviceFrame";
 import { FunnelContainer } from "@/components/FunnelContainer";
 import { ShareModal } from "@/components/ShareModal";
+import { THEMES } from "@/lib/themes";
 import { Edit3 } from "lucide-react";
 
 function StudioApp() {
@@ -65,10 +66,12 @@ function StudioApp() {
     );
   }
 
+  const theme = THEMES[config.theme] || THEMES["pastel-romance"];
+
   // Recipient / Play Mode: Clean full screen experience with zero builder UI
   if (mode === "play") {
     return (
-      <div className="min-h-screen w-full relative flex flex-col justify-center">
+      <div className={`min-h-screen w-full relative flex flex-col justify-center bg-gradient-to-br ${theme.bgGradient}`}>
         {/* Main interactive funnel */}
         <FunnelContainer config={config} isBuilderPreview={false} />
 
@@ -113,7 +116,7 @@ function StudioApp() {
 
         {/* Right Canvas: Interactive Device Frame */}
         <div className="flex-1 h-1/2 md:h-full bg-slate-100 relative overflow-hidden flex flex-col">
-          <DeviceFrame device={device} onDeviceChange={setDevice}>
+          <DeviceFrame device={device} onDeviceChange={setDevice} themeId={config.theme}>
             <FunnelContainer config={config} isBuilderPreview={true} />
           </DeviceFrame>
         </div>
