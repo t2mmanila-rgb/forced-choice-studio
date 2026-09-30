@@ -13,8 +13,8 @@ interface RiggedChoiceCardProps {
   rejectionPhrases: string[];
   themeClasses: {
     activeBorder: string;
-    cardBg: string;
-    cardBorder: string;
+    inactiveCardBg: string;
+    mutedText?: string;
   };
   onSelect: (cardId: string) => void;
 }
@@ -33,7 +33,6 @@ export const RiggedChoiceCard: React.FC<RiggedChoiceCardProps> = ({
 
   const handleClick = () => {
     if (isRiggedMode && !isTarget) {
-      // Trigger horizontal shake and humorous tooltip
       setIsShaking(true);
       const randomPhrase =
         rejectionPhrases.length > 0
@@ -56,14 +55,14 @@ export const RiggedChoiceCard: React.FC<RiggedChoiceCardProps> = ({
         {tooltipText && (
           <motion.div
             initial={{ opacity: 0, y: 10, scale: 0.8 }}
-            animate={{ opacity: 1, y: -42, scale: 1 }}
+            animate={{ opacity: 1, y: -44, scale: 1 }}
             exit={{ opacity: 0, y: -20, scale: 0.8 }}
             transition={{ type: "spring", stiffness: 500, damping: 25 }}
-            className="absolute left-1/2 -translate-x-1/2 top-0 z-30 pointer-events-none whitespace-nowrap bg-rose-600 text-white font-semibold text-xs sm:text-sm px-3.5 py-1.5 rounded-full shadow-lg flex items-center gap-1.5"
+            className="absolute left-1/2 -translate-x-1/2 top-0 z-30 pointer-events-none whitespace-nowrap bg-rose-600 text-white font-black text-xs sm:text-sm px-4 py-1.5 rounded-full shadow-2xl flex items-center gap-1.5 ring-2 ring-white/50"
           >
-            <AlertCircle className="w-3.5 h-3.5" />
+            <AlertCircle className="w-4 h-4" />
             <span>{tooltipText}</span>
-            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-rose-600 rotate-45" />
+            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-rose-600 rotate-45" />
           </motion.div>
         )}
       </AnimatePresence>
@@ -76,7 +75,7 @@ export const RiggedChoiceCard: React.FC<RiggedChoiceCardProps> = ({
             ? {
                 x: [-8, 8, -6, 6, -3, 3, 0],
                 borderColor: ["#f43f5e", "#e11d48", "#f43f5e"],
-                boxShadow: "0 0 12px rgba(244, 63, 94, 0.4)",
+                boxShadow: "0 0 16px rgba(244, 63, 94, 0.6)",
               }
             : isSelected
             ? { scale: [1, 1.03, 1] }
@@ -85,10 +84,10 @@ export const RiggedChoiceCard: React.FC<RiggedChoiceCardProps> = ({
         transition={{ duration: isShaking ? 0.4 : 0.2 }}
         whileHover={{ scale: isShaking ? 1 : 1.02 }}
         whileTap={{ scale: 0.98 }}
-        className={`w-full text-left p-4 rounded-2xl border transition-all duration-200 relative overflow-hidden flex flex-col justify-between ${
+        className={`w-full text-left p-4 rounded-2xl border transition-all duration-200 relative overflow-hidden flex flex-col justify-between cursor-pointer ${
           isSelected
             ? themeClasses.activeBorder
-            : `${themeClasses.cardBg} ${themeClasses.cardBorder} hover:border-slate-300 hover:shadow-md`
+            : themeClasses.inactiveCardBg
         }`}
       >
         <div className="flex items-start justify-between gap-2 mb-2">
@@ -105,19 +104,19 @@ export const RiggedChoiceCard: React.FC<RiggedChoiceCardProps> = ({
 
           <div className="flex-shrink-0">
             {isSelected ? (
-              <div className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-sm">
-                <Check className="w-4 h-4" />
+              <div className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-md">
+                <Check className="w-4 h-4 stroke-[3]" />
               </div>
             ) : isRiggedMode && isTarget ? (
-              <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
-                <Sparkles className="w-3 h-3" /> Best Pick
+              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-300 bg-amber-950/80 px-2.5 py-0.5 rounded-full border border-amber-500/50 shadow-xs">
+                <Sparkles className="w-3 h-3 text-amber-400" /> Best Pick
               </span>
             ) : null}
           </div>
         </div>
 
         {card.description && (
-          <p className="text-xs sm:text-sm text-slate-500 line-clamp-2 mt-0.5">
+          <p className="text-xs sm:text-sm opacity-80 line-clamp-2 mt-0.5">
             {card.description}
           </p>
         )}

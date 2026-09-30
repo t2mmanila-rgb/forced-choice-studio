@@ -3,33 +3,36 @@
 import React, { useState } from "react";
 import { AppConfig, EvasionBehavior, ThemeId, ChoiceCard } from "@/types";
 import { THEMES } from "@/lib/themes";
+import { TEMPLATES } from "@/lib/templates";
 import {
+  Sparkles,
   Palette,
   Zap,
   Target,
   Layers,
   Plus,
   Trash2,
-  Smile,
-  Sliders,
-  Sparkles,
-  Check,
   ChevronDown,
   Info,
+  Check,
+  ArrowRight,
+  Flame,
 } from "lucide-react";
 
 interface BuilderSidebarProps {
   config: AppConfig;
   onChange: (newConfig: AppConfig) => void;
+  onSelectTemplate: (templateKey: string) => void;
 }
 
-type TabType = "theme" | "evasion" | "rigging" | "cards";
+type TabType = "templates" | "theme" | "evasion" | "rigging" | "cards";
 
 export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
   config,
   onChange,
+  onSelectTemplate,
 }) => {
-  const [activeTab, setActiveTab] = useState<TabType>("theme");
+  const [activeTab, setActiveTab] = useState<TabType>("templates");
   const [newPhrase, setNewPhrase] = useState("");
   const [stepCopyOpen, setStepCopyOpen] = useState<number | null>(1);
 
@@ -114,97 +117,219 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
 
   return (
     <div className="w-full h-full bg-white border-r border-slate-200 flex flex-col overflow-hidden text-slate-800">
-      {/* Tabs bar */}
-      <div className="flex border-b border-slate-200 bg-slate-50/80 p-1.5 gap-1 select-none">
+      {/* Step Navigation Tabs Bar */}
+      <div className="flex border-b border-slate-200 bg-slate-50/90 p-1.5 gap-1 select-none overflow-x-auto">
+        <button
+          type="button"
+          onClick={() => setActiveTab("templates")}
+          className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
+            activeTab === "templates"
+              ? "bg-slate-900 text-white shadow-xs"
+              : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
+          }`}
+        >
+          <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+          <span>1. Templates</span>
+        </button>
+
         <button
           type="button"
           onClick={() => setActiveTab("theme")}
-          className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+          className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
             activeTab === "theme"
-              ? "bg-white text-slate-900 shadow-xs border border-slate-200/80"
-              : "text-slate-500 hover:text-slate-800"
+              ? "bg-slate-900 text-white shadow-xs"
+              : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
           }`}
         >
           <Palette className="w-3.5 h-3.5" />
-          <span>Theme & Copy</span>
+          <span>2. Theme & Copy</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab("evasion")}
-          className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+          className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
             activeTab === "evasion"
-              ? "bg-white text-slate-900 shadow-xs border border-slate-200/80"
-              : "text-slate-500 hover:text-slate-800"
+              ? "bg-slate-900 text-white shadow-xs"
+              : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
           }`}
         >
           <Zap className="w-3.5 h-3.5" />
-          <span>Evasion</span>
+          <span>3. Evasion</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab("rigging")}
-          className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+          className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
             activeTab === "rigging"
-              ? "bg-white text-slate-900 shadow-xs border border-slate-200/80"
-              : "text-slate-500 hover:text-slate-800"
+              ? "bg-slate-900 text-white shadow-xs"
+              : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
           }`}
         >
           <Target className="w-3.5 h-3.5" />
-          <span>Rigging</span>
+          <span>4. Rigging</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab("cards")}
-          className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+          className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
             activeTab === "cards"
-              ? "bg-white text-slate-900 shadow-xs border border-slate-200/80"
-              : "text-slate-500 hover:text-slate-800"
+              ? "bg-slate-900 text-white shadow-xs"
+              : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
           }`}
         >
           <Layers className="w-3.5 h-3.5" />
-          <span>Cards</span>
+          <span>5. Cards</span>
         </button>
       </div>
 
       {/* Tab Panels */}
       <div className="flex-1 overflow-y-auto p-5 space-y-6">
-        {/* ===================== TAB 1: THEME & COPY ===================== */}
+        {/* ===================== TAB 1: PRESET TEMPLATES (FIRST STEP) ===================== */}
+        {activeTab === "templates" && (
+          <div className="space-y-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="w-6 h-6 rounded-full bg-amber-100 text-amber-800 text-xs font-black flex items-center justify-center">
+                  1
+                </span>
+                <h3 className="font-extrabold text-sm sm:text-base text-slate-900">
+                  Choose a Starting Template
+                </h3>
+              </div>
+              <p className="text-xs text-slate-500 mb-4">
+                Select a pre-configured scenario. You can customize the theme, questions, and rigged logic right after!
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3">
+              {Object.entries(TEMPLATES).map(([key, t]) => {
+                const isSelected = config.id === key;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => onSelectTemplate(key)}
+                    className={`p-4 rounded-2xl border text-left transition-all relative flex flex-col gap-2 cursor-pointer ${
+                      isSelected
+                        ? "border-rose-500 bg-rose-50/40 ring-2 ring-rose-200 shadow-md"
+                        : "border-slate-200 hover:border-slate-300 hover:bg-slate-50/80 bg-white"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className="text-3xl leading-none">{t.step1.emoji}</span>
+                        <div>
+                          <h4 className="font-bold text-sm text-slate-900">
+                            {t.title}
+                          </h4>
+                          <span className="text-[11px] font-semibold text-rose-600 uppercase tracking-wider">
+                            {t.step4.mode === "rigged" ? "Rigged Single Path" : "Free Choice"}
+                          </span>
+                        </div>
+                      </div>
+
+                      {isSelected && (
+                        <div className="w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center shadow-xs">
+                          <Check className="w-3.5 h-3.5 stroke-[3]" />
+                        </div>
+                      )}
+                    </div>
+
+                    <p className="text-xs text-slate-500 italic bg-white/70 p-2.5 rounded-xl border border-slate-100">
+                      "{t.step1.title}"
+                    </p>
+
+                    <div className="flex items-center gap-2 pt-1 text-[11px] text-slate-400">
+                      <span>Evasion: <strong>{t.step1.evasionBehavior}</strong></span>
+                      <span>•</span>
+                      <span>Default Theme: <strong>{THEMES[t.theme]?.name}</strong></span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={() => setActiveTab("theme")}
+                className="w-full py-3.5 px-4 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer"
+              >
+                <span>Continue to Theme & Copy</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ===================== TAB 2: THEME & COPY ===================== */}
         {activeTab === "theme" && (
           <div className="space-y-6">
             <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2.5">
-                Visual Theme Palette
-              </label>
-              <div className="grid grid-cols-1 gap-2.5">
-                {Object.values(THEMES).map((th) => (
-                  <button
-                    key={th.id}
-                    type="button"
-                    onClick={() => updateConfig((prev) => ({ ...prev, theme: th.id }))}
-                    className={`p-3 rounded-2xl border text-left flex items-center justify-between transition-all cursor-pointer ${
-                      config.theme === th.id
-                        ? "border-rose-500 ring-2 ring-rose-200 bg-rose-50/30"
-                        : "border-slate-200 hover:border-slate-300 bg-white"
-                    }`}
-                  >
-                    <div>
-                      <h4 className="font-bold text-xs sm:text-sm text-slate-800">
-                        {th.name}
-                      </h4>
-                      <p className="text-[11px] text-slate-500">
-                        {th.description}
-                      </p>
-                    </div>
-                    {config.theme === th.id && (
-                      <div className="w-5 h-5 rounded-full bg-rose-500 text-white flex items-center justify-center flex-shrink-0">
-                        <Check className="w-3 h-3 stroke-[3]" />
+              <div className="flex items-center gap-2 mb-1">
+                <span className="w-6 h-6 rounded-full bg-purple-100 text-purple-800 text-xs font-black flex items-center justify-center">
+                  2
+                </span>
+                <h3 className="font-extrabold text-sm sm:text-base text-slate-900">
+                  Select Visual Style
+                </h3>
+              </div>
+              <p className="text-xs text-slate-500 mb-3">
+                Watch the preview canvas adapt instantly to the distinct aesthetic.
+              </p>
+
+              <div className="grid grid-cols-1 gap-3">
+                {Object.values(THEMES).map((th) => {
+                  const isSelected = config.theme === th.id;
+                  return (
+                    <button
+                      key={th.id}
+                      type="button"
+                      onClick={() => updateConfig((prev) => ({ ...prev, theme: th.id }))}
+                      className={`p-3.5 rounded-2xl border text-left flex items-start justify-between transition-all cursor-pointer ${
+                        isSelected
+                          ? "border-rose-500 ring-2 ring-rose-200 bg-rose-50/40 shadow-sm"
+                          : "border-slate-200 hover:border-slate-300 bg-white"
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div
+                          className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-xs font-bold ${
+                            th.id === "pastel-romance"
+                              ? "bg-rose-400 text-white"
+                              : th.id === "electric-fun"
+                              ? "bg-purple-950 text-cyan-300 border border-cyan-400"
+                              : "bg-black text-emerald-400 border border-zinc-700"
+                          }`}
+                        >
+                          {th.id === "pastel-romance" ? "💖" : th.id === "electric-fun" ? "⚡" : "⬛"}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-bold text-xs sm:text-sm text-slate-900">
+                              {th.name}
+                            </h4>
+                            <span className="text-[10px] text-slate-400 font-medium">
+                              ({th.subtitle})
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-slate-500 mt-0.5">
+                            {th.description}
+                          </p>
+                        </div>
                       </div>
-                    )}
-                  </button>
-                ))}
+
+                      {isSelected && (
+                        <div className="w-5 h-5 rounded-full bg-rose-500 text-white flex items-center justify-center flex-shrink-0 mt-1">
+                          <Check className="w-3 h-3 stroke-[3]" />
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -529,13 +654,22 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
           </div>
         )}
 
-        {/* ===================== TAB 2: EVASION ENGINE ===================== */}
+        {/* ===================== TAB 3: EVASION ENGINE ===================== */}
         {activeTab === "evasion" && (
           <div className="space-y-6">
             <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                "No" Button Evasion Model
-              </label>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="w-6 h-6 rounded-full bg-cyan-100 text-cyan-800 text-xs font-black flex items-center justify-center">
+                  3
+                </span>
+                <h3 className="font-extrabold text-sm sm:text-base text-slate-900">
+                  "No" Button Evasion Model
+                </h3>
+              </div>
+              <p className="text-xs text-slate-500 mb-3">
+                Configure how the unclickable rejection button behaves when approached.
+              </p>
+
               <select
                 value={config.step1.evasionBehavior}
                 onChange={(e) =>
@@ -624,15 +758,23 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
           </div>
         )}
 
-        {/* ===================== TAB 3: RIGGING ENGINE ===================== */}
+        {/* ===================== TAB 4: RIGGING ENGINE ===================== */}
         {activeTab === "rigging" && (
           <div className="space-y-6">
-            {/* Mode Toggle */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                Step 4 Selection Mode
-              </label>
-              <div className="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-2xl">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="w-6 h-6 rounded-full bg-rose-100 text-rose-800 text-xs font-black flex items-center justify-center">
+                  4
+                </span>
+                <h3 className="font-extrabold text-sm sm:text-base text-slate-900">
+                  Step 4 Decision Rigging
+                </h3>
+              </div>
+              <p className="text-xs text-slate-500 mb-3">
+                Force the outcome by making other choices shake and throw hilarious excuses.
+              </p>
+
+              <div className="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-2xl mb-4">
                 <button
                   type="button"
                   onClick={() =>
@@ -675,10 +817,6 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
                 <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                   Designated "Target / Correct" Choice
                 </label>
-                <p className="text-[11px] text-slate-500 mb-3">
-                  All other cards will violently shake and display funny excuses when tapped.
-                </p>
-
                 <div className="space-y-2">
                   {config.step4.options.map((opt) => (
                     <label
@@ -726,7 +864,7 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
                 <div className="flex gap-2 mb-3">
                   <input
                     type="text"
-                    placeholder="e.g., Sold out! Try again 😉"
+                    placeholder="e.g., Kitchen is closed!"
                     value={newPhrase}
                     onChange={(e) => setNewPhrase(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleAddPhrase()}
@@ -764,7 +902,7 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
           </div>
         )}
 
-        {/* ===================== TAB 4: CARDS MANAGER ===================== */}
+        {/* ===================== TAB 5: CARDS MANAGER ===================== */}
         {activeTab === "cards" && (
           <div className="space-y-6">
             {/* Step 3 Time Slots Manager */}
@@ -783,7 +921,7 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
               </div>
 
               <div className="space-y-2">
-                {config.step3.options.map((opt, i) => (
+                {config.step3.options.map((opt) => (
                   <div
                     key={opt.id}
                     className="p-3 bg-white rounded-2xl border border-slate-200 space-y-2"

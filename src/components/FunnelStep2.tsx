@@ -21,7 +21,6 @@ export const FunnelStep2: React.FC<FunnelStep2Props> = ({
   const theme = THEMES[themeId] || THEMES["pastel-romance"];
 
   useEffect(() => {
-    // Gentle recurring sparkle confetti on load
     try {
       confetti({
         particleCount: 50,
@@ -42,7 +41,9 @@ export const FunnelStep2: React.FC<FunnelStep2Props> = ({
         transition={{ type: "spring", stiffness: 300, damping: 15 }}
         className="relative mb-6"
       >
-        <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-white shadow-xl flex items-center justify-center text-5xl sm:text-6xl border border-white/80">
+        <div
+          className={`w-24 h-24 sm:w-28 sm:h-28 rounded-3xl shadow-2xl flex items-center justify-center text-5xl sm:text-6xl ${theme.iconBg}`}
+        >
           {config.emoji || "🥂"}
         </div>
         <motion.div
@@ -58,9 +59,9 @@ export const FunnelStep2: React.FC<FunnelStep2Props> = ({
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider mb-4 border bg-white/70 shadow-sm"
+        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider mb-4 border shadow-sm ${theme.chipBg}`}
       >
-        <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+        <Sparkles className="w-3.5 h-3.5 text-amber-400" />
         <span>Decision Recorded & Irreversible</span>
       </motion.div>
 
@@ -69,7 +70,7 @@ export const FunnelStep2: React.FC<FunnelStep2Props> = ({
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="text-2xl sm:text-4xl font-extrabold tracking-tight mb-3 text-slate-800 leading-tight"
+        className={`text-2xl sm:text-4xl font-extrabold tracking-tight mb-3 leading-tight ${theme.headingText}`}
       >
         {config.title}
       </motion.h2>
@@ -79,7 +80,7 @@ export const FunnelStep2: React.FC<FunnelStep2Props> = ({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="text-sm sm:text-base text-slate-600 mb-8 max-w-sm"
+        className={`text-sm sm:text-base mb-8 max-w-sm ${theme.mutedText}`}
       >
         {config.subtitle}
       </motion.p>

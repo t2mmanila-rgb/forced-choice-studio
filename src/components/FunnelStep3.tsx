@@ -26,13 +26,13 @@ export const FunnelStep3: React.FC<FunnelStep3Props> = ({
   return (
     <div className="flex flex-col items-center justify-between px-4 py-6 sm:py-10 min-h-[460px] w-full max-w-lg mx-auto select-none">
       <div className="w-full text-center mb-6">
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-white shadow-sm border border-slate-100 mb-3 text-2xl">
-          <Calendar className="w-6 h-6 text-slate-700" />
+        <div className={`inline-flex items-center justify-center w-12 h-12 rounded-2xl shadow-md mb-3 text-2xl ${theme.iconBg}`}>
+          <Calendar className="w-6 h-6" />
         </div>
-        <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight mb-2">
+        <h2 className={`text-2xl sm:text-3xl font-extrabold tracking-tight mb-2 ${theme.headingText}`}>
           {config.title}
         </h2>
-        <p className="text-sm text-slate-500 max-w-sm mx-auto">
+        <p className={`text-sm max-w-sm mx-auto ${theme.mutedText}`}>
           {config.subtitle}
         </p>
       </div>
@@ -51,7 +51,7 @@ export const FunnelStep3: React.FC<FunnelStep3Props> = ({
               className={`w-full p-4 rounded-2xl border text-left transition-all duration-200 flex items-center justify-between gap-4 cursor-pointer ${
                 isSelected
                   ? theme.activeCardBorder
-                  : "bg-white/80 border-slate-200/80 hover:border-slate-300 hover:bg-white"
+                  : theme.inactiveCardBg
               }`}
             >
               <div className="flex items-center gap-3.5">
@@ -61,11 +61,11 @@ export const FunnelStep3: React.FC<FunnelStep3Props> = ({
                   </span>
                 )}
                 <div>
-                  <h4 className="font-bold text-slate-900 text-sm sm:text-base">
+                  <h4 className="font-bold text-sm sm:text-base">
                     {opt.title}
                   </h4>
                   {opt.description && (
-                    <p className="text-xs text-slate-500 mt-0.5">
+                    <p className={`text-xs mt-0.5 opacity-80 ${theme.mutedText}`}>
                       {opt.description}
                     </p>
                   )}
@@ -76,7 +76,7 @@ export const FunnelStep3: React.FC<FunnelStep3Props> = ({
                 className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${
                   isSelected
                     ? "bg-emerald-500 text-white shadow-sm"
-                    : "border-2 border-slate-300 bg-white"
+                    : "border-2 border-slate-400/50 bg-black/10"
                 }`}
               >
                 {isSelected && <Check className="w-4 h-4 stroke-[3]" />}
@@ -96,7 +96,7 @@ export const FunnelStep3: React.FC<FunnelStep3Props> = ({
         className={`w-full py-4 rounded-full font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
           selectedId
             ? `${theme.primaryButton} shadow-lg`
-            : "bg-slate-200 text-slate-400 cursor-not-allowed"
+            : "bg-slate-300/40 text-slate-500 cursor-not-allowed"
         }`}
       >
         <span>Lock In Time & Continue</span>

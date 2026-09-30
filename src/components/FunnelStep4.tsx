@@ -28,13 +28,13 @@ export const FunnelStep4: React.FC<FunnelStep4Props> = ({
   return (
     <div className="flex flex-col items-center justify-between px-4 py-6 sm:py-8 min-h-[480px] w-full max-w-xl mx-auto select-none">
       <div className="w-full text-center mb-6">
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-white shadow-sm border border-slate-100 mb-3 text-2xl">
-          <Compass className="w-6 h-6 text-slate-700" />
+        <div className={`inline-flex items-center justify-center w-12 h-12 rounded-2xl shadow-md mb-3 text-2xl ${theme.iconBg}`}>
+          <Compass className="w-6 h-6" />
         </div>
-        <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight mb-2">
+        <h2 className={`text-2xl sm:text-3xl font-extrabold tracking-tight mb-2 ${theme.headingText}`}>
           {config.title}
         </h2>
-        <p className="text-sm text-slate-500 max-w-md mx-auto">
+        <p className={`text-sm max-w-md mx-auto ${theme.mutedText}`}>
           {config.subtitle}
         </p>
       </div>
@@ -51,8 +51,8 @@ export const FunnelStep4: React.FC<FunnelStep4Props> = ({
             rejectionPhrases={config.rejectionPhrases}
             themeClasses={{
               activeBorder: theme.activeCardBorder,
-              cardBg: "bg-white/80",
-              cardBorder: "border-slate-200/80",
+              inactiveCardBg: theme.inactiveCardBg,
+              mutedText: theme.mutedText,
             }}
             onSelect={onSelect}
           />
@@ -69,7 +69,7 @@ export const FunnelStep4: React.FC<FunnelStep4Props> = ({
         className={`w-full py-4 rounded-full font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
           selectedId
             ? `${theme.primaryButton} shadow-lg`
-            : "bg-slate-200 text-slate-400 cursor-not-allowed"
+            : "bg-slate-300/40 text-slate-500 cursor-not-allowed"
         }`}
       >
         <span>Seal the Plan & View Pass</span>

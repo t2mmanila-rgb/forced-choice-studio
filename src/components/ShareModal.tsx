@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AppConfig } from "@/types";
 import { TEMPLATES } from "@/lib/templates";
-import { generateShareUrl } from "@/lib/urlState";
+import { generateShareUrl, createShortUrl } from "@/lib/urlState";
 import {
   X,
   Copy,
@@ -14,6 +14,8 @@ import {
   Link,
   Send,
   Layers,
+  Scissors,
+  Loader2,
 } from "lucide-react";
 
 interface ShareModalProps {
@@ -30,19 +32,46 @@ export const ShareModal: React.FC<ShareModalProps> = ({
   onSelectTemplate,
 }) => {
   const [copied, setCopied] = useState(false);
+  const [shortUrl, setShortUrl] = useState<string>("");
+  const [isShortening, setIsShortening] = useState(false);
+  const [shortCopied, setShortCopied] = useState(false);
+
+  const directUrl = generateShareUrl(config, true);
+
+  // Reset short url when config changes
+  useEffect(() => {
+    setShortUrl("");
+  }, [config]);
 
   if (!isOpen) return null;
 
-  const shareUrl = generateShareUrl(config, true);
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(shareUrl);
+  const handleCopyDirect = () => {
+    navigator.clipboard.writeText(directUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleCopyShort = () => {
+    if (!shortUrl) return;
+    navigator.clipboard.writeText(shortUrl);
+    setShortCopied(true);
+    setTimeout(() => setShortCopied(false), 2000);
+  };
+
+  const handleCreateShortLink = async () => {
+    setIsShortening(true);
+    try {
+      const short = await createShortUrl(directUrl);
+      setShortUrl(short);
+    } catch {
+      setShortUrl(directUrl);
+    } finally {
+      setIsShortening(false);
+    }
+  };
+
   const handleTestRecipient = () => {
-    window.open(shareUrl, "_blank");
+    window.open(shortUrl || directUrl, "_blank");
   };
 
   return (
@@ -72,15 +101,80 @@ export const ShareModal: React.FC<ShareModalProps> = ({
                 Share Your Funnel
               </h3>
               <p className="text-xs text-slate-500">
-                Instantly generate a self-contained, serverless link for your recipient
+                Send to your recipient with zero backend or database required
               </p>
             </div>
           </div>
 
-          {/* Quick Copy Link Box */}
+          {/* Tiny / Short URL Feature */}
+          <div className="mb-5 p-4 rounded-2xl bg-gradient-to-r from-amber-50 to-rose-50 border border-amber-200/80">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                <Scissors className="w-4 h-4 text-amber-600" />
+                Ultra-Short Share Link
+              </span>
+              <span className="text-[10px] font-bold text-amber-700 bg-amber-100/80 px-2 py-0.5 rounded-full">
+                {shortUrl ? "Shortened!" : "Much Shorter Link"}
+              </span>
+            </div>
+
+            {shortUrl ? (
+              <div className="flex items-center gap-2 p-2 bg-white rounded-xl border border-amber-300 shadow-xs">
+                <input
+                  type="text"
+                  readOnly
+                  value={shortUrl}
+                  className="flex-1 bg-transparent text-xs font-mono font-bold text-slate-800 outline-none truncate select-all"
+                />
+                <button
+                  type="button"
+                  onClick={handleCopyShort}
+                  className="px-3.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold flex items-center gap-1 transition-all cursor-pointer"
+                >
+                  {shortCopied ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>Copied!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5" />
+                      <span>Copy Short</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-[11px] text-slate-600">
+                  Generate a compact ~25 character link easy to text or DM:
+                </p>
+                <button
+                  type="button"
+                  onClick={handleCreateShortLink}
+                  disabled={isShortening}
+                  className="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer flex-shrink-0 disabled:opacity-50"
+                >
+                  {isShortening ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>Shortening...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Scissors className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Generate Short Link</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Direct Compact URL Box */}
           <div className="mb-6">
             <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-              Recipient Link (Zero Backend Required)
+              Direct Link ({directUrl.length} chars)
             </label>
             <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-2xl border border-slate-200">
               <div className="p-2 rounded-xl bg-white text-slate-400 border border-slate-200/60">
@@ -89,12 +183,12 @@ export const ShareModal: React.FC<ShareModalProps> = ({
               <input
                 type="text"
                 readOnly
-                value={shareUrl}
+                value={directUrl}
                 className="flex-1 bg-transparent text-xs font-mono text-slate-600 outline-none truncate select-all"
               />
               <button
                 type="button"
-                onClick={handleCopy}
+                onClick={handleCopyDirect}
                 className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer flex-shrink-0"
               >
                 {copied ? (
@@ -105,7 +199,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
                 ) : (
                   <>
                     <Copy className="w-3.5 h-3.5" />
-                    <span>Copy Link</span>
+                    <span>Copy</span>
                   </>
                 )}
               </button>
@@ -116,11 +210,11 @@ export const ShareModal: React.FC<ShareModalProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
             <button
               type="button"
-              onClick={handleCopy}
+              onClick={shortUrl ? handleCopyShort : handleCopyDirect}
               className="py-3 px-4 rounded-2xl bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer"
             >
               <Copy className="w-4 h-4" />
-              <span>Copy Recipient Link</span>
+              <span>{shortUrl ? "Copy Short Link" : "Copy Recipient Link"}</span>
             </button>
 
             <button
@@ -133,7 +227,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
             </button>
           </div>
 
-          {/* Template Switcher */}
+          {/* Quick Preset Templates Switcher */}
           <div className="border-t border-slate-100 pt-5">
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">

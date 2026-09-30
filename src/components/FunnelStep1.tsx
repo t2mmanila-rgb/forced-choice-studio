@@ -6,7 +6,7 @@ import confetti from "canvas-confetti";
 import { Step1Config, ThemeId } from "@/types";
 import { THEMES } from "@/lib/themes";
 import { EvasiveButton } from "./EvasiveButton";
-import { Heart, Sparkles, AlertTriangle, XCircle } from "lucide-react";
+import { Heart, AlertTriangle } from "lucide-react";
 
 interface FunnelStep1Props {
   config: Step1Config;
@@ -41,13 +41,12 @@ export const FunnelStep1: React.FC<FunnelStep1Props> = ({ config, themeId, onYes
   };
 
   const handleYesClick = () => {
-    // Fire confetti celebration
     try {
       confetti({
         particleCount: 100,
         spread: 70,
         origin: { y: 0.6 },
-        colors: ["#f43f5e", "#ec4899", "#8b5cf6", "#f59e0b", "#10b981"],
+        colors: ["#f43f5e", "#ec4899", "#8b5cf6", "#f59e0b", "#10b981", "#06b6d4"],
       });
     } catch {
       // ignore
@@ -64,7 +63,7 @@ export const FunnelStep1: React.FC<FunnelStep1Props> = ({ config, themeId, onYes
       <motion.div
         animate={{ scale: [1, 1.15, 1], rotate: [0, 5, -5, 0] }}
         transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
-        className="w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center text-4xl sm:text-5xl mb-6 shadow-inner bg-white/70 border border-white/60"
+        className={`w-20 h-20 sm:w-24 sm:h-24 rounded-3xl flex items-center justify-center text-4xl sm:text-5xl mb-6 shadow-xl ${theme.iconBg}`}
       >
         {config.emoji || "💖"}
       </motion.div>
@@ -73,7 +72,7 @@ export const FunnelStep1: React.FC<FunnelStep1Props> = ({ config, themeId, onYes
       <motion.h1
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-2xl sm:text-4xl font-extrabold tracking-tight mb-3 text-slate-800 leading-tight"
+        className={`text-2xl sm:text-4xl font-extrabold tracking-tight mb-3 leading-tight ${theme.headingText}`}
       >
         {config.title}
       </motion.h1>
@@ -82,7 +81,7 @@ export const FunnelStep1: React.FC<FunnelStep1Props> = ({ config, themeId, onYes
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="text-sm sm:text-base text-slate-600 mb-8 max-w-sm"
+        className={`text-sm sm:text-base mb-8 max-w-sm ${theme.mutedText}`}
       >
         {config.subtitle}
       </motion.p>
@@ -128,7 +127,7 @@ export const FunnelStep1: React.FC<FunnelStep1Props> = ({ config, themeId, onYes
           <button
             type="button"
             onClick={() => setShowEscapeModal(true)}
-            className="text-xs text-slate-400 hover:text-slate-600 underline underline-offset-4 transition-colors"
+            className={`text-xs underline underline-offset-4 transition-colors opacity-70 hover:opacity-100 ${theme.mutedText}`}
           >
             Okay okay, I give up, let me actually say no
           </button>
@@ -138,12 +137,12 @@ export const FunnelStep1: React.FC<FunnelStep1Props> = ({ config, themeId, onYes
       {/* Server Refusal Modal */}
       <AnimatePresence>
         {showEscapeModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="bg-white rounded-3xl p-6 sm:p-8 max-w-sm w-full text-center shadow-2xl border border-slate-100 relative"
+              className="bg-white rounded-3xl p-6 sm:p-8 max-w-sm w-full text-center shadow-2xl border border-slate-100 relative text-slate-900"
             >
               <div className="w-16 h-16 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto mb-4">
                 <AlertTriangle className="w-8 h-8" />

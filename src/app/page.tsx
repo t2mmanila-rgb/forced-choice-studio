@@ -4,13 +4,13 @@ import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { AppConfig } from "@/types";
 import { DEFAULT_CONFIG, TEMPLATES } from "@/lib/templates";
-import { deserializeConfig, serializeConfig } from "@/lib/urlState";
+import { parseConfigFromUrl } from "@/lib/urlState";
 import { Header } from "@/components/Header";
 import { BuilderSidebar } from "@/components/BuilderSidebar";
 import { DeviceFrame } from "@/components/DeviceFrame";
 import { FunnelContainer } from "@/components/FunnelContainer";
 import { ShareModal } from "@/components/ShareModal";
-import { Sparkles, Edit3 } from "lucide-react";
+import { Edit3 } from "lucide-react";
 
 function StudioApp() {
   const searchParams = useSearchParams();
@@ -24,26 +24,19 @@ function StudioApp() {
   useEffect(() => {
     try {
       const modeParam = searchParams.get("mode");
-      const configParam = searchParams.get("c") || searchParams.get("state");
-
-      let loadedConfig: AppConfig | null = null;
-
-      if (configParam) {
-        loadedConfig = deserializeConfig(configParam);
-      } else if (window.location.hash) {
-        const hash = window.location.hash.replace("#", "");
-        const params = new URLSearchParams(hash);
-        const hashConfig = params.get("c") || params.get("state");
-        if (hashConfig) {
-          loadedConfig = deserializeConfig(hashConfig);
-        }
-      }
+      const loadedConfig = parseConfigFromUrl(
+        searchParams,
+        typeof window !== "undefined" ? window.location.hash : ""
+      );
 
       if (loadedConfig) {
         setConfig(loadedConfig);
       }
 
-      if (modeParam === "play" || (configParam && modeParam !== "edit")) {
+      if (
+        modeParam === "play" ||
+        (loadedConfig && modeParam !== "edit" && (searchParams.get("t") || searchParams.get("c")))
+      ) {
         setMode("play");
       }
     } catch (err) {
@@ -111,7 +104,11 @@ function StudioApp() {
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden relative">
         {/* Left Drawer: Builder Settings Panel */}
         <div className="w-full md:w-[420px] lg:w-[460px] h-1/2 md:h-full flex-shrink-0 z-10 shadow-sm border-r border-slate-200">
-          <BuilderSidebar config={config} onChange={setConfig} />
+          <BuilderSidebar
+            config={config}
+            onChange={setConfig}
+            onSelectTemplate={handleSelectTemplate}
+          />
         </div>
 
         {/* Right Canvas: Interactive Device Frame */}

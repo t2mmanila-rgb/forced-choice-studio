@@ -13,8 +13,7 @@ import {
   Edit3,
   RotateCcw,
   Sparkles,
-  Smartphone,
-  Monitor,
+  ChevronDown,
 } from "lucide-react";
 
 interface HeaderProps {
@@ -43,25 +42,47 @@ export const Header: React.FC<HeaderProps> = ({
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const currentTemplate = TEMPLATES[config.id] || TEMPLATES["romantic-date"];
+
   return (
-    <header className="h-16 w-full bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-4 sm:px-6 flex items-center justify-between z-30 sticky top-0">
-      {/* Brand & Tagline */}
-      <div className="flex items-center gap-3">
-        <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-rose-500 to-pink-500 text-white flex items-center justify-center shadow-sm shadow-rose-200">
-          <Heart className="w-5 h-5 fill-current" />
-        </div>
-        <div>
-          <div className="flex items-center gap-1.5">
-            <span className="font-extrabold text-slate-900 tracking-tight text-base sm:text-lg">
-              YesPlan
-            </span>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200">
-              Studio
-            </span>
+    <header className="h-16 w-full bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-4 sm:px-6 flex items-center justify-between z-30 sticky top-0 select-none">
+      {/* Brand & Active Template Pill */}
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-rose-500 to-pink-500 text-white flex items-center justify-center shadow-sm shadow-rose-200">
+            <Heart className="w-5 h-5 fill-current" />
           </div>
-          <p className="text-[10px] text-slate-400 hidden sm:block">
-            Forced Choice Interactive Funnels
-          </p>
+          <div>
+            <div className="flex items-center gap-1.5">
+              <span className="font-extrabold text-slate-900 tracking-tight text-base sm:text-lg">
+                YesPlan
+              </span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200">
+                Studio
+              </span>
+            </div>
+            <p className="text-[10px] text-slate-400 hidden sm:block">
+              Forced Choice Interactive Funnels
+            </p>
+          </div>
+        </div>
+
+        {/* Quick Template Switcher Dropdown */}
+        <div className="hidden lg:flex items-center relative">
+          <div className="flex items-center gap-1.5 pl-3 border-l border-slate-200 text-xs">
+            <span className="text-slate-400 font-medium">Template:</span>
+            <select
+              value={config.id in TEMPLATES ? config.id : "romantic-date"}
+              onChange={(e) => onSelectTemplate(e.target.value)}
+              className="font-bold text-slate-800 bg-slate-100 hover:bg-slate-200/80 border border-slate-200 rounded-xl px-2.5 py-1 outline-none cursor-pointer text-xs"
+            >
+              {Object.entries(TEMPLATES).map(([key, t]) => (
+                <option key={key} value={key}>
+                  {t.step1.emoji} {t.title}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
@@ -98,24 +119,6 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Right Actions */}
       <div className="flex items-center gap-2 sm:gap-2.5">
-        {/* Template Selector dropdown */}
-        <select
-          value={config.id in TEMPLATES ? config.id : ""}
-          onChange={(e) => {
-            if (e.target.value) onSelectTemplate(e.target.value);
-          }}
-          className="text-xs font-semibold py-1.5 px-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 outline-none hover:bg-slate-100 hidden md:block cursor-pointer"
-        >
-          <option value="" disabled>
-            ✨ Choose Template
-          </option>
-          {Object.entries(TEMPLATES).map(([key, t]) => (
-            <option key={key} value={key}>
-              {t.title}
-            </option>
-          ))}
-        </select>
-
         {/* Quick Copy Link */}
         <button
           type="button"
