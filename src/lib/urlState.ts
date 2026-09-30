@@ -211,9 +211,9 @@ export function generateShareUrl(config: AppConfig, playOnly: boolean = true): s
 
     if (!areStep3OptionsEqual || !areStep4OptionsEqual || !arePhrasesEqual) {
       const delta: Record<string, any> = {};
-      if (!areStep3OptionsEqual) delta.s3Opts = config.step3.options;
-      if (!areStep4OptionsEqual) delta.s4Opts = config.step4.options;
-      if (!arePhrasesEqual) delta.phrases = config.step4.rejectionPhrases;
+      if (!areStep3OptionsEqual) delta.s3 = config.step3.options.map((o) => [o.id, o.title, o.description || "", o.emoji || ""]);
+      if (!areStep4OptionsEqual) delta.s4 = config.step4.options.map((o) => [o.id, o.title, o.description || "", o.emoji || ""]);
+      if (!arePhrasesEqual) delta.p = config.step4.rejectionPhrases;
       params.set("d", LZString.compressToEncodedURIComponent(JSON.stringify(delta)));
     }
 
@@ -273,9 +273,27 @@ export function parseConfigFromUrl(searchParams: URLSearchParams, hashStr: strin
           const decompressed = LZString.decompressFromEncodedURIComponent(dParam);
           if (decompressed) {
             const delta = JSON.parse(decompressed);
-            if (delta.s3Opts) config.step3.options = delta.s3Opts;
-            if (delta.s4Opts) config.step4.options = delta.s4Opts;
-            if (delta.phrases) config.step4.rejectionPhrases = delta.phrases;
+            if (delta.s3) {
+              config.step3.options = delta.s3.map((o: any) =>
+                Array.isArray(o) ? { id: o[0], title: o[1], description: o[2], emoji: o[3] } : o
+              );
+            } else if (delta.s3Opts) {
+              config.step3.options = delta.s3Opts;
+            }
+
+            if (delta.s4) {
+              config.step4.options = delta.s4.map((o: any) =>
+                Array.isArray(o) ? { id: o[0], title: o[1], description: o[2], emoji: o[3] } : o
+              );
+            } else if (delta.s4Opts) {
+              config.step4.options = delta.s4Opts;
+            }
+
+            if (delta.p) {
+              config.step4.rejectionPhrases = delta.p;
+            } else if (delta.phrases) {
+              config.step4.rejectionPhrases = delta.phrases;
+            }
           }
         } catch (e) {
           console.warn("Failed to parse delta:", e);
