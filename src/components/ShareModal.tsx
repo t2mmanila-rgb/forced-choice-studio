@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AppConfig } from "@/types";
 import { TEMPLATES } from "@/lib/templates";
-import { generateShareUrl, createShortUrl } from "@/lib/urlState";
+import { generateShareUrl } from "@/lib/urlState";
 import {
   X,
   Copy,
@@ -14,8 +14,6 @@ import {
   Link,
   Send,
   Layers,
-  Scissors,
-  Loader2,
 } from "lucide-react";
 
 interface ShareModalProps {
@@ -32,16 +30,8 @@ export const ShareModal: React.FC<ShareModalProps> = ({
   onSelectTemplate,
 }) => {
   const [copied, setCopied] = useState(false);
-  const [shortUrl, setShortUrl] = useState<string>("");
-  const [isShortening, setIsShortening] = useState(false);
-  const [shortCopied, setShortCopied] = useState(false);
 
   const directUrl = generateShareUrl(config, true);
-
-  // Reset short url when config changes
-  useEffect(() => {
-    setShortUrl("");
-  }, [config]);
 
   if (!isOpen) return null;
 
@@ -51,32 +41,13 @@ export const ShareModal: React.FC<ShareModalProps> = ({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleCopyShort = () => {
-    if (!shortUrl) return;
-    navigator.clipboard.writeText(shortUrl);
-    setShortCopied(true);
-    setTimeout(() => setShortCopied(false), 2000);
-  };
-
-  const handleCreateShortLink = async () => {
-    setIsShortening(true);
-    try {
-      const short = await createShortUrl(directUrl);
-      setShortUrl(short);
-    } catch {
-      setShortUrl(directUrl);
-    } finally {
-      setIsShortening(false);
-    }
-  };
-
   const handleTestRecipient = () => {
-    window.open(shortUrl || directUrl, "_blank");
+    window.open(directUrl, "_blank");
   };
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-150">
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 15 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -87,12 +58,12 @@ export const ShareModal: React.FC<ShareModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="absolute top-5 right-5 p-2 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+            className="absolute top-5 right-5 p-2 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
 
-          <div className="flex items-center gap-3 mb-5">
+          <div className="flex items-center gap-3 mb-6">
             <div className="w-12 h-12 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center shadow-xs">
               <Send className="w-6 h-6" />
             </div>
@@ -106,85 +77,24 @@ export const ShareModal: React.FC<ShareModalProps> = ({
             </div>
           </div>
 
-          {/* Tiny / Short URL Feature */}
-          <div className="mb-5 p-4 rounded-2xl bg-gradient-to-r from-amber-50 to-rose-50 border border-amber-200/80">
+          {/* Standard Shareable Link Box */}
+          <div className="mb-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                <Scissors className="w-4 h-4 text-amber-600" />
-                Ultra-Short Share Link
-              </span>
-              <span className="text-[10px] font-bold text-amber-700 bg-amber-100/80 px-2 py-0.5 rounded-full">
-                {shortUrl ? "Shortened!" : "Much Shorter Link"}
+              <label className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                <Link className="w-3.5 h-3.5 text-rose-500" />
+                <span>Shareable Recipient Link</span>
+              </label>
+              <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                Ready to Send
               </span>
             </div>
 
-            {shortUrl ? (
-              <div className="flex items-center gap-2 p-2 bg-white rounded-xl border border-amber-300 shadow-xs">
-                <input
-                  type="text"
-                  readOnly
-                  value={shortUrl}
-                  className="flex-1 bg-transparent text-xs font-mono font-bold text-slate-800 outline-none truncate select-all"
-                />
-                <button
-                  type="button"
-                  onClick={handleCopyShort}
-                  className="px-3.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold flex items-center gap-1 transition-all cursor-pointer"
-                >
-                  {shortCopied ? (
-                    <>
-                      <Check className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>Copied!</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-3.5 h-3.5" />
-                      <span>Copy Short</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center justify-between gap-3">
-                <p className="text-[11px] text-slate-600">
-                  Generate a compact ~25 character link easy to text or DM:
-                </p>
-                <button
-                  type="button"
-                  onClick={handleCreateShortLink}
-                  disabled={isShortening}
-                  className="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer flex-shrink-0 disabled:opacity-50"
-                >
-                  {isShortening ? (
-                    <>
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      <span>Shortening...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Scissors className="w-3.5 h-3.5 text-amber-400" />
-                      <span>Generate Short Link</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Direct Compact URL Box */}
-          <div className="mb-6">
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-              Direct Link ({directUrl.length} chars)
-            </label>
-            <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-2xl border border-slate-200">
-              <div className="p-2 rounded-xl bg-white text-slate-400 border border-slate-200/60">
-                <Link className="w-4 h-4" />
-              </div>
+            <div className="flex items-center gap-2 p-2.5 bg-slate-50 rounded-2xl border-2 border-slate-200 focus-within:border-rose-400 focus-within:ring-2 focus-within:ring-rose-100 transition-all">
               <input
                 type="text"
                 readOnly
                 value={directUrl}
-                className="flex-1 bg-transparent text-xs font-mono text-slate-600 outline-none truncate select-all"
+                className="flex-1 bg-transparent text-xs font-mono text-slate-700 outline-none truncate select-all px-2"
               />
               <button
                 type="button"
@@ -210,17 +120,26 @@ export const ShareModal: React.FC<ShareModalProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
             <button
               type="button"
-              onClick={shortUrl ? handleCopyShort : handleCopyDirect}
-              className="py-3 px-4 rounded-2xl bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer"
+              onClick={handleCopyDirect}
+              className="py-3.5 px-4 rounded-2xl bg-rose-500 hover:bg-rose-600 text-white font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all cursor-pointer transform hover:scale-[1.01]"
             >
-              <Copy className="w-4 h-4" />
-              <span>{shortUrl ? "Copy Short Link" : "Copy Recipient Link"}</span>
+              {copied ? (
+                <>
+                  <Check className="w-4 h-4 stroke-[3]" />
+                  <span>Copied to Clipboard!</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-4 h-4" />
+                  <span>Copy Recipient Link</span>
+                </>
+              )}
             </button>
 
             <button
               type="button"
               onClick={handleTestRecipient}
-              className="py-3 px-4 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer"
+              className="py-3.5 px-4 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer"
             >
               <ExternalLink className="w-4 h-4" />
               <span>Test Recipient View</span>
@@ -241,24 +160,19 @@ export const ShareModal: React.FC<ShareModalProps> = ({
                 <button
                   key={key}
                   type="button"
-                  onClick={() => {
-                    onSelectTemplate(key);
-                    onClose();
-                  }}
-                  className={`p-3 rounded-2xl border text-left transition-all cursor-pointer flex items-center gap-3 ${
+                  onClick={() => onSelectTemplate(key)}
+                  className={`p-3 rounded-2xl border text-left flex items-center gap-2.5 transition-all cursor-pointer ${
                     config.id === key
-                      ? "border-rose-400 bg-rose-50/50 shadow-xs"
-                      : "border-slate-200/80 hover:border-slate-300 hover:bg-slate-50"
+                      ? "border-rose-500 bg-rose-50/50 ring-2 ring-rose-200"
+                      : "border-slate-200 hover:border-slate-300 bg-white"
                   }`}
                 >
                   <span className="text-2xl">{t.step1.emoji}</span>
-                  <div>
-                    <h5 className="font-bold text-xs text-slate-800 line-clamp-1">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-bold text-slate-900 truncate">
                       {t.title}
-                    </h5>
-                    <p className="text-[11px] text-slate-500 line-clamp-1">
-                      {t.step4.mode === "rigged" ? "Rigged Choice" : "Free Choice"}
                     </p>
+                    <p className="text-[10px] text-slate-400">Rigged Choice</p>
                   </div>
                 </button>
               ))}

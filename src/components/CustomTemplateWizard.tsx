@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { AppConfig, ChoiceCard, EvasionBehavior, ThemeId } from "@/types";
 import { THEMES } from "@/lib/themes";
+import { TEMPLATES } from "@/lib/templates";
 import {
   ARCHETYPES,
   ArchetypeTopic,
@@ -147,8 +148,16 @@ export const CustomTemplateWizard: React.FC<CustomTemplateWizardProps> = ({
 
   // Build and apply complete AppConfig
   const handleFinish = () => {
+    const baseId =
+      activeArchetype && activeArchetype.id in TEMPLATES
+        ? activeArchetype.id
+        : topicInput.toLowerCase().includes("parent")
+        ? "favourite-parent"
+        : undefined;
+
     const customConfig: AppConfig = {
-      id: `custom-${Date.now()}`,
+      id: baseId ? baseId : `custom-${Date.now()}`,
+      baseTemplateId: baseId,
       title: topicInput.trim() || "Custom Forced Choice",
       theme: selectedTheme,
       step1: {

@@ -52,6 +52,7 @@ export interface Step5Config {
 
 export interface AppConfig {
   id: string;
+  baseTemplateId?: string;
   title: string;
   theme: ThemeId;
   step1: Step1Config;
